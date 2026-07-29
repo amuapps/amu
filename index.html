@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Auto Mitra Utama-Vespa Indonesia</title>
+<meta name="description" content="Katalog Vespa. Temukan model, harga, test ride, dan dealer terdekat.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0d0d0d;
+  --paper:#ffffff;
+  --smoke:#f4f4f4;
+  --line:#e2e2e2;
+  --mute:#8a8a8a;
+  --accent:#0d0d0d;
+  --top:34px;
+  --nav:64px;
+  --disp:'Barlow Condensed',Impact,sans-serif;
+  --body:'Barlow',Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--body);color:var(--ink);background:var(--paper);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+:focus-visible{outline:2px solid #000;outline-offset:2px}
+
+/* ---------- TOP BAR ---------- */
+.topbar{height:var(--top);background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:flex-end;gap:22px;padding:0 18px;font-family:var(--disp);font-size:13px;letter-spacing:.14em;text-transform:uppercase;position:fixed;top:0;left:0;right:0;z-index:60}
+.topbar a{opacity:.75;transition:opacity .2s}
+.topbar a:hover{opacity:1}
+.topbar .lang b{opacity:1}
+.topbar .lang{opacity:1}
+
+/* ---------- HEADER ---------- */
+.header{position:fixed;top:var(--top);left:0;right:0;height:var(--nav);z-index:59;display:flex;align-items:center;justify-content:space-between;padding:0 18px;transition:background .3s,box-shadow .3s;background:transparent}
+.header.solid{background:#fff;box-shadow:0 1px 0 var(--line)}
+.brand{font-family:var(--disp);font-weight:700;font-size:30px;letter-spacing:.28em;text-transform:uppercase;color:#fff;transition:color .3s;padding-left:.28em}
+.header.solid .brand{color:var(--ink)}
+.mainnav{display:none;gap:26px;font-family:var(--disp);font-size:15px;letter-spacing:.13em;text-transform:uppercase}
+.mainnav a{position:relative;color:#fff;transition:color .3s;padding:6px 0}
+.header.solid .mainnav a{color:var(--ink)}
+.mainnav a::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:currentColor;transform:scaleX(0);transform-origin:left;transition:transform .25s}
+.mainnav a:hover::after{transform:scaleX(1)}
+.burger{width:34px;height:24px;position:relative}
+.burger span{position:absolute;left:0;right:0;height:2px;background:#fff;transition:.3s}
+.header.solid .burger span{background:var(--ink)}
+.burger span:nth-child(1){top:0}
+.burger span:nth-child(2){top:11px}
+.burger span:nth-child(3){top:22px}
+body.menu-open .burger span:nth-child(1){top:11px;transform:rotate(45deg);background:#fff}
+body.menu-open .burger span:nth-child(2){opacity:0}
+body.menu-open .burger span:nth-child(3){top:11px;transform:rotate(-45deg);background:#fff}
+
+/* ---------- DRAWER ---------- */
+.drawer{position:fixed;inset:0;background:var(--ink);color:#fff;z-index:58;padding:calc(var(--top) + var(--nav) + 20px) 24px 40px;transform:translateY(-100%);transition:transform .45s cubic-bezier(.7,0,.2,1);overflow-y:auto}
+body.menu-open .drawer{transform:translateY(0)}
+.drawer a{display:block;font-family:var(--disp);font-size:26px;letter-spacing:.1em;text-transform:uppercase;padding:14px 0;border-bottom:1px solid #222}
+.drawer .sub{margin-top:26px;font-size:13px;letter-spacing:.16em;color:var(--mute)}
+.drawer .sub a{font-size:15px;border:0;padding:8px 0;color:#fff}
+
+/* ---------- HERO ---------- */
+.hero{position:relative;height:100svh;min-height:520px;overflow:hidden;background:#111}
+.slide{position:absolute;inset:0;opacity:0;transition:opacity .9s ease;display:flex;align-items:flex-end}
+.slide.on{opacity:1}
+.slide .bg{position:absolute;inset:0;background-size:cover;background-position:center}
+.slide .bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.45) 0%,rgba(0,0,0,0) 38%,rgba(0,0,0,.72) 100%)}
+.slide .cap{position:relative;padding:0 24px 92px;max-width:760px;color:#fff}
+.slide .eyebrow{font-family:var(--disp);font-size:13px;letter-spacing:.3em;text-transform:uppercase;opacity:.85;margin-bottom:10px}
+.slide h2{font-family:var(--disp);font-weight:600;text-transform:uppercase;font-size:clamp(34px,8vw,72px);line-height:.95;letter-spacing:.02em}
+.slide p{margin-top:12px;font-weight:300;font-size:16px;opacity:.9;max-width:46ch}
+.btn-line{display:inline-block;margin-top:20px;font-family:var(--disp);font-size:14px;letter-spacing:.18em;text-transform:uppercase;border:1px solid #fff;padding:12px 30px;transition:.25s}
+.btn-line:hover{background:#fff;color:#000}
+.hero-nav{position:absolute;bottom:34px;left:24px;right:24px;display:flex;align-items:center;justify-content:space-between;z-index:3}
+.dots{display:flex;gap:8px;flex-wrap:wrap}
+.dots i{width:26px;height:2px;background:rgba(255,255,255,.35);cursor:pointer;transition:.3s}
+.dots i.on{background:#fff}
+.arrows{display:flex;gap:8px}
+.arrows button{width:42px;height:42px;border:1px solid rgba(255,255,255,.5);color:#fff;font-size:18px;line-height:1;transition:.25s}
+.arrows button:hover{background:#fff;color:#000}
+
+/* ---------- SECTION ---------- */
+.sec{padding:74px 20px}
+.sec-head{text-align:center;margin-bottom:34px}
+.sec-head h3{font-family:var(--disp);font-weight:600;text-transform:uppercase;font-size:clamp(26px,5vw,42px);letter-spacing:.04em}
+.sec-head span{display:block;font-family:var(--disp);font-size:14px;letter-spacing:.28em;text-transform:uppercase;color:var(--mute);margin-top:8px}
+
+/* ---------- RANGE ---------- */
+.filters{display:flex;gap:8px;overflow-x:auto;padding-bottom:12px;margin-bottom:26px;scrollbar-width:none;justify-content:flex-start}
+.filters::-webkit-scrollbar{display:none}
+.filters button{white-space:nowrap;font-family:var(--disp);font-size:13px;letter-spacing:.16em;text-transform:uppercase;padding:9px 18px;border:1px solid var(--line);transition:.2s}
+.filters button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.card{background:var(--smoke);padding:16px 14px 20px;text-align:center;transition:.3s;position:relative;overflow:hidden}
+.card:hover{background:#ececec}
+.card .thumb{aspect-ratio:4/3;margin-bottom:12px;display:flex;align-items:center;justify-content:center;background-size:cover;background-position:center}
+.card h4{font-family:var(--disp);font-size:17px;text-transform:uppercase;letter-spacing:.08em;line-height:1.15}
+.card .price{font-size:13px;color:var(--mute);margin-top:6px;font-weight:400}
+.card .more{font-family:var(--disp);font-size:12px;letter-spacing:.18em;text-transform:uppercase;margin-top:10px;display:inline-block;border-bottom:1px solid var(--ink)}
+.tagline{display:inline-block;font-family:var(--disp);font-size:11px;letter-spacing:.16em;text-transform:uppercase;background:var(--ink);color:#fff;padding:3px 8px;position:absolute;top:12px;left:12px}
+
+/* placeholder scooter mark */
+.ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:repeating-linear-gradient(135deg,#e9e9e9 0 12px,#e3e3e3 12px 24px);color:#b4b4b4;font-family:var(--disp);font-size:12px;letter-spacing:.2em;text-transform:uppercase}
+
+/* ---------- TILES ---------- */
+.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.tile{position:relative;aspect-ratio:1/1;background:#1a1a1a;overflow:hidden;display:flex;align-items:flex-end;padding:18px}
+.tile .bg{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform .6s}
+.tile:hover .bg{transform:scale(1.06)}
+.tile::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.75))}
+.tile span{position:relative;z-index:2;color:#fff;font-family:var(--disp);font-size:16px;letter-spacing:.16em;text-transform:uppercase}
+
+/* ---------- NEWS ---------- */
+.news{background:var(--smoke)}
+.news-rail{display:flex;gap:14px;overflow-x:auto;padding-bottom:14px;scroll-snap-type:x mandatory;scrollbar-width:none}
+.news-rail::-webkit-scrollbar{display:none}
+.news-item{flex:0 0 78%;max-width:340px;background:#fff;scroll-snap-align:start}
+.news-item .thumb{aspect-ratio:16/10;background:#ddd;background-size:cover;background-position:center}
+.news-item .body{padding:16px}
+.news-item .date{font-family:var(--disp);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute)}
+.news-item h5{font-size:15px;font-weight:500;line-height:1.4;margin-top:8px}
+.readall{display:block;text-align:center;margin-top:24px;font-family:var(--disp);letter-spacing:.2em;text-transform:uppercase;font-size:14px}
+.readall::after{content:"";display:block;width:110px;height:1px;background:var(--ink);margin:8px auto 0}
+
+/* ---------- LEAD FORM ---------- */
+.lead{background:var(--ink);color:#fff}
+.lead .sec-head h3{color:#fff}
+.lead .sec-head span{color:#7d7d7d}
+.form{max-width:520px;margin:0 auto;display:grid;gap:12px}
+.form input,.form select,.form textarea{width:100%;background:transparent;border:1px solid #333;color:#fff;padding:13px 14px;font-family:var(--body);font-size:15px}
+.form input::placeholder,.form textarea::placeholder{color:#6f6f6f}
+.form select{color:#c9c9c9}
+.form select option{color:#000}
+.form .row{display:grid;gap:12px}
+.form button{background:#fff;color:#000;padding:14px;font-family:var(--disp);letter-spacing:.2em;text-transform:uppercase;font-size:14px;transition:.2s}
+.form button:hover{background:#d8d8d8}
+.form .note{font-size:12px;color:#7d7d7d;line-height:1.5}
+.form .ok{display:none;border:1px solid #2e2e2e;padding:12px;font-size:14px;color:#cfcfcf}
+
+/* ---------- FOOTER ---------- */
+.footer{background:#000;color:#fff;padding:54px 20px 110px;text-align:center}
+.footer .nl{font-family:var(--disp);letter-spacing:.2em;text-transform:uppercase;font-size:15px;margin-bottom:16px}
+.nl-form{display:flex;max-width:420px;margin:0 auto 34px;border-bottom:1px solid #333}
+.nl-form input{flex:1;background:none;border:0;color:#fff;padding:12px 2px;font-size:15px}
+.nl-form input::placeholder{color:#666}
+.nl-form button{font-family:var(--disp);letter-spacing:.16em;text-transform:uppercase;font-size:13px;padding:0 10px}
+.social{display:flex;justify-content:center;gap:18px;margin-bottom:30px}
+.social a{width:38px;height:38px;border:1px solid #2c2c2c;display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-size:13px;letter-spacing:.05em;transition:.2s}
+.social a:hover{background:#fff;color:#000}
+.flinks{display:flex;justify-content:center;gap:18px;font-family:var(--disp);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#8a8a8a;margin-bottom:16px;flex-wrap:wrap}
+.copy{font-size:11px;color:#5e5e5e;line-height:1.7;max-width:620px;margin:0 auto}
+
+/* ---------- FLOATING ---------- */
+.fab{position:fixed;right:14px;bottom:14px;z-index:57;display:flex;flex-direction:column;gap:10px;align-items:flex-end}
+.fab a{display:flex;align-items:center;gap:8px;padding:12px 16px;font-family:var(--disp);font-size:13px;letter-spacing:.14em;text-transform:uppercase;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.fab .wa{background:#25d366;color:#0b3d20}
+.fab .tr{background:var(--ink);color:#fff}
+
+@media(min-width:760px){
+  .sec{padding:96px 40px}
+  .grid{grid-template-columns:repeat(3,1fr);gap:16px}
+  .tiles{grid-template-columns:repeat(4,1fr)}
+  .filters{justify-content:center}
+  .slide .cap{padding:0 56px 110px}
+  .hero-nav{left:56px;right:56px}
+  .header,.topbar{padding:0 40px}
+  .news-item{flex:0 0 300px}
+  .form .row{grid-template-columns:1fr 1fr}
+}
+@media(min-width:1080px){
+  .mainnav{display:flex}
+  .burger{display:none}
+  .grid{grid-template-columns:repeat(5,1fr)}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="#kontak">Contact Us</a>
+  <a href="#dealer">Dealer</a>
+  <a href="#" class="lang"><b>IND</b> / ENG</a>
+</div>
+
+<header class="header" id="header">
+  <a href="#" class="brand">Vespa</a>
+  <nav class="mainnav">
+    <a href="#model">Model</a>
+    <a href="#news">News &amp; Promo</a>
+    <a href="#testride">Test Ride</a>
+    <a href="#aftersales">Aftersales</a>
+    <a href="#accessories">Accessories</a>
+    <a href="#model">Configurator</a>
+    <a href="#heritage">Heritage</a>
+    <a href="#essentials">Vespa Essentials</a>
+  </nav>
+  <button class="burger" id="burger" aria-label="Buka menu"><span></span><span></span><span></span></button>
+</header>
+
+<nav class="drawer" id="drawer">
+  <a href="#model">Model</a>
+  <a href="#news">News &amp; Promo</a>
+  <a href="#testride">Test Ride</a>
+  <a href="#aftersales">Aftersales</a>
+  <a href="#accessories">Accessories</a>
+  <a href="#model">Configurator</a>
+  <a href="#heritage">Heritage</a>
+  <a href="#essentials">Vespa Essentials</a>
+  <div class="sub">
+    <a href="#kontak">Contact Us</a>
+    <a href="#dealer">Dealer</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div id="slides"></div>
+  <div class="hero-nav">
+    <div class="dots" id="dots"></div>
+    <div class="arrows">
+      <button id="prev" aria-label="Sebelumnya">&#10094;</button>
+      <button id="next" aria-label="Berikutnya">&#10095;</button>
+    </div>
+  </div>
+</section>
+
+<!-- RANGE -->
+<section class="sec" id="model">
+  <div class="sec-head">
+    <h3>Discover The Range</h3>
+    <span>Choose Your Model</span>
+  </div>
+  <div class="filters" id="filters"></div>
+  <div class="grid" id="grid"></div>
+</section>
+
+<!-- TILES -->
+<section class="tiles" id="essentials">
+  <a class="tile" href="#model"><div class="bg" data-ph></div><span>Primavera</span></a>
+  <a class="tile" href="#model"><div class="bg" data-ph></div><span>Configurator</span></a>
+  <a class="tile" href="#testride"><div class="bg" data-ph></div><span>Test Ride</span></a>
+  <a class="tile" href="#dealer"><div class="bg" data-ph></div><span>Find Us</span></a>
+</section>
+
+<!-- NEWS -->
+<section class="sec news" id="news">
+  <div class="sec-head"><h3>News</h3></div>
+  <div class="news-rail" id="newsRail"></div>
+  <a class="readall" href="#news">Read More</a>
+</section>
+
+<!-- LEAD FORM / TEST RIDE -->
+<section class="sec lead" id="testride">
+  <div class="sec-head">
+    <h3>Test Ride</h3>
+    <span>Jadwalkan sesi berkendara Anda</span>
+  </div>
+  <form class="form" id="leadForm">
+    <input name="nama" placeholder="Nama lengkap" required>
+    <div class="row">
+      <input name="hp" placeholder="Nomor WhatsApp" required inputmode="tel">
+      <input name="email" type="email" placeholder="E-mail">
+    </div>
+    <select name="model" id="leadModel"></select>
+    <select name="kota" id="leadKota"></select>
+    <textarea name="pesan" rows="3" placeholder="Catatan (opsional)"></textarea>
+    <button type="submit">Kirim Permintaan</button>
+    <p class="note">Dengan mengirim formulir ini Anda setuju dihubungi oleh tim dealer terkait penawaran dan jadwal test ride.</p>
+    <div class="ok" id="leadOk">Terima kasih. Permintaan Anda terkirim — tim kami akan menghubungi via WhatsApp.</div>
+  </form>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer" id="kontak">
+  <div class="nl">Newsletter: Keep Updated with Vespa</div>
+  <form class="nl-form" id="nlForm">
+    <input type="email" placeholder="Alamat e-mail" required>
+    <button type="submit">Submit</button>
+  </form>
+  <div class="social">
+    <a href="#" aria-label="Facebook">FB</a>
+    <a href="#" aria-label="X">X</a>
+    <a href="#" aria-label="YouTube">YT</a>
+    <a href="#" aria-label="Instagram">IG</a>
+  </div>
+  <div class="flinks" id="dealer">
+    <a href="#">Legal Note</a>
+    <a href="#aftersales">Aftersales</a>
+    <a href="#accessories">Accessories</a>
+    <a href="#heritage">Heritage</a>
+    <a href="#dealer">Dealer</a>
+  </div>
+  <p class="copy">
+    © SRISP 2026 — PT Auto Mitra Utama.<br>
+    DISCLAIMER: SEMUA FOTO PRODUK HANYA UNTUK ILUSTRASI. PRODUK YANG DITAMPILKAN DAPAT BERBEDA.
+  </p>
+</footer>
+
+<div class="fab">
+  <a class="wa" id="waBtn" href="#" target="_blank" rel="noopener">WhatsApp</a>
+  <a class="tr" href="#testride">Test Ride</a>
+</div>
+
+<script>
+/* =========================================================
+   KONFIGURASI — ubah bagian ini saja untuk data & gambar
+   ========================================================= */
+const CONFIG = {
+  wa: "6260699191",           // nomor WhatsApp dealer
+  waText: "Halo, saya ingin tanya unit Vespa"
+};
+
+/* Isi "img" dengan URL gambar Anda sendiri. Kosong = placeholder. */
+const SLIDES = [
+  {eyebrow:"New", title:"GTS Super Tech 250", desc:"Mesin baru 250cc untuk petualangan urban.", cta:"Discover More", img:""},
+  {eyebrow:"Anniversary", title:"Vespa 80th Limited Edition", desc:"Delapan dekade ikon dua roda.", cta:"Discover More", img:""},
+  {eyebrow:"Icon", title:"Primavera", desc:"Fuel your passion, unlock new worlds.", cta:"Discover More", img:""},
+  {eyebrow:"Sport", title:"Sprint Tech", desc:"Karakter sporty dengan teknologi terkini.", cta:"Discover More", img:""},
+  {eyebrow:"Electric", title:"Vespa Elettrica", desc:"Berkendara tanpa emisi, tanpa suara.", cta:"Discover More", img:""}
+];
+
+const MODELS = [
+  {name:"Vespa 80th Limited Edition", cat:"Special", price:"", tag:"Limited", img:""},
+  {name:"GTS Super Tech 250",         cat:"GTS",     price:"", tag:"New",     img:""},
+  {name:"Vespa 946 Horse",            cat:"Special", price:"", tag:"Limited", img:""},
+  {name:"Vespa GTV Officina 8",       cat:"GTV",     price:"", tag:"",        img:""},
+  {name:"Vespa Sprint Officina 8",    cat:"Sprint",  price:"", tag:"",        img:""},
+  {name:"Vespa Sprint Tech",          cat:"Sprint",  price:"", tag:"",        img:""},
+  {name:"Sprint S",                   cat:"Sprint",  price:"", tag:"",        img:""},
+  {name:"Sprint",                     cat:"Sprint",  price:"", tag:"",        img:""},
+  {name:"Primavera S",                cat:"Primavera",price:"",tag:"",        img:""},
+  {name:"Primavera",                  cat:"Primavera",price:"",tag:"",        img:""},
+  {name:"Vespa Elettrica",            cat:"Elettrica",price:"",tag:"",        img:""},
+  {name:"GTV",                        cat:"GTV",     price:"", tag:"",        img:""},
+  {name:"GTS Super Sport 150",        cat:"GTS",     price:"", tag:"",        img:""},
+  {name:"GTS Classic 150",            cat:"GTS",     price:"", tag:"",        img:""},
+  {name:"LX",                         cat:"LX",      price:"", tag:"",        img:""}
+];
+
+const NEWS = [
+  {date:"29 Mei 2026", title:"Vespa GTS Super Tech terbaru hadir dengan mesin 250cc untuk petualangan urban", img:""},
+  {date:"26 Mei 2026", title:"Vespa 80th: perayaan delapan dekade sang ikon", img:""},
+  {date:"1 Apr 2026",  title:"Eksplorasi gaya baru bersama brand Piaggio Group setelah masa liburan", img:""},
+  {date:"30 Mar 2026", title:"Motoplex 4 Brand resmi dibuka di Makassar", img:""},
+  {date:"17 Mar 2026", title:"Primavera dan Sprint kini bermesin 180cc", img:""}
+];
+
+const KOTA = ["Jakarta","Bekasi","Bogor","Depok","Tangerang","Bandung","Cirebon","Semarang","Solo","Yogyakarta","Surabaya","Sidoarjo","Malang","Denpasar","Medan","Padang","Palembang","Pekanbaru","Lampung","Pontianak","Banjarmasin","Balikpapan","Samarinda","Makassar"];
+
+/* ================= RENDER ================= */
+const ph = (label) => `<div class="ph">${label}</div>`;
+const bgStyle = (img) => img ? `background-image:url('${img}')` : 'background:#1c1c1c';
+
+/* Hero */
+const slidesEl = document.getElementById('slides');
+const dotsEl = document.getElementById('dots');
+slidesEl.innerHTML = SLIDES.map((s,i)=>`
+  <div class="slide ${i===0?'on':''}">
+    <div class="bg" style="${bgStyle(s.img)}"></div>
+    <div class="cap">
+      <div class="eyebrow">${s.eyebrow}</div>
+      <h2>${s.title}</h2>
+      <p>${s.desc}</p>
+      <a class="btn-line" href="#model">${s.cta}</a>
+    </div>
+  </div>`).join('');
+dotsEl.innerHTML = SLIDES.map((_,i)=>`<i data-i="${i}" class="${i===0?'on':''}"></i>`).join('');
+
+let cur = 0, timer;
+const slideEls = () => document.querySelectorAll('.slide');
+function go(n){
+  const els = slideEls(), ds = dotsEl.querySelectorAll('i');
+  cur = (n + els.length) % els.length;
+  els.forEach((e,i)=>e.classList.toggle('on', i===cur));
+  ds.forEach((d,i)=>d.classList.toggle('on', i===cur));
+}
+function auto(){ clearInterval(timer); timer = setInterval(()=>go(cur+1), 6000); }
+document.getElementById('next').onclick = ()=>{go(cur+1);auto()};
+document.getElementById('prev').onclick = ()=>{go(cur-1);auto()};
+dotsEl.onclick = e => { if(e.target.dataset.i!==undefined){ go(+e.target.dataset.i); auto(); } };
+auto();
+
+/* swipe hero */
+let sx=null;
+document.getElementById('hero').addEventListener('touchstart',e=>sx=e.touches[0].clientX,{passive:true});
+document.getElementById('hero').addEventListener('touchend',e=>{
+  if(sx===null)return;
+  const dx = e.changedTouches[0].clientX - sx;
+  if(Math.abs(dx)>50){ go(dx<0?cur+1:cur-1); auto(); }
+  sx=null;
+},{passive:true});
+
+/* Range */
+const cats = ['Semua', ...new Set(MODELS.map(m=>m.cat))];
+const filtersEl = document.getElementById('filters');
+const gridEl = document.getElementById('grid');
+filtersEl.innerHTML = cats.map((c,i)=>`<button data-c="${c}" class="${i===0?'on':''}">${c}</button>`).join('');
+function drawGrid(cat){
+  const list = cat==='Semua' ? MODELS : MODELS.filter(m=>m.cat===cat);
+  gridEl.innerHTML = list.map(m=>`
+    <a class="card" href="#testride">
+      ${m.tag?`<span class="tagline">${m.tag}</span>`:''}
+      <div class="thumb" style="${m.img?`background-image:url('${m.img}')`:''}">${m.img?'':ph(m.cat)}</div>
+      <h4>${m.name}</h4>
+      ${m.price?`<div class="price">${m.price}</div>`:`<div class="price">Harga on request</div>`}
+      <span class="more">Lihat</span>
+    </a>`).join('');
+}
+drawGrid('Semua');
+filtersEl.onclick = e => {
+  const b = e.target.closest('button'); if(!b) return;
+  filtersEl.querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  drawGrid(b.dataset.c);
+};
+
+/* Tiles placeholder */
+document.querySelectorAll('[data-ph]').forEach(el=>{
+  el.style.background = 'repeating-linear-gradient(135deg,#232323 0 14px,#1b1b1b 14px 28px)';
+});
+
+/* News */
+document.getElementById('newsRail').innerHTML = NEWS.map(n=>`
+  <a class="news-item" href="#news">
+    <div class="thumb" style="${n.img?`background-image:url('${n.img}')`:''}">${n.img?'':ph('Berita')}</div>
+    <div class="body">
+      <div class="date">${n.date}</div>
+      <h5>${n.title}</h5>
+    </div>
+  </a>`).join('');
+
+/* Form selects */
+document.getElementById('leadModel').innerHTML =
+  '<option value="">Pilih model</option>' + MODELS.map(m=>`<option>${m.name}</option>`).join('');
+document.getElementById('leadKota').innerHTML =
+  '<option value="">Pilih kota</option>' + KOTA.map(k=>`<option>${k}</option>`).join('');
+
+/* WhatsApp */
+document.getElementById('waBtn').href =
+  `https://wa.me/${CONFIG.wa}?text=${encodeURIComponent(CONFIG.waText)}`;
+
+/* Submit → buka WhatsApp dengan isi form */
+document.getElementById('leadForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const f = e.target;
+  const txt = `Halo, saya ingin test ride Vespa.
+Nama: ${f.nama.value}
+WhatsApp: ${f.hp.value}
+Email: ${f.email.value || '-'}
+Model: ${f.model.value || '-'}
+Kota: ${f.kota.value || '-'}
+Catatan: ${f.pesan.value || '-'}`;
+  window.open(`https://wa.me/${CONFIG.wa}?text=${encodeURIComponent(txt)}`,'_blank');
+  document.getElementById('leadOk').style.display='block';
+  f.reset();
+});
+document.getElementById('nlForm').addEventListener('submit', e=>{
+  e.preventDefault(); e.target.querySelector('input').value='';
+  alert('Terima kasih, e-mail Anda sudah terdaftar.');
+});
+
+/* Header & menu */
+const header = document.getElementById('header');
+const onScroll = () => header.classList.toggle('solid', window.scrollY > window.innerHeight - 120);
+window.addEventListener('scroll', onScroll, {passive:true}); onScroll();
+document.getElementById('burger').onclick = () => document.body.classList.toggle('menu-open');
+document.getElementById('drawer').onclick = e => { if(e.target.tagName==='A') document.body.classList.remove('menu-open'); };
+</script>
+</body>
+</html>
