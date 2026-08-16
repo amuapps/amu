@@ -454,6 +454,7 @@ let dataLoaded = false;
 
 /* ================= STORAGE ================= */
 async function loadData(){
+  let storageWorks = true;
   try{
     const res = await window.storage.get(STORAGE_KEY, true);
     if(res && res.value){
@@ -461,15 +462,25 @@ async function loadData(){
       // backfill any missing fields if defaults grew over time
       siteData = Object.assign({}, DEFAULT_DATA, siteData);
     } else {
+      // Key exists but empty — start from defaults.
       siteData = JSON.parse(JSON.stringify(DEFAULT_DATA));
-      await saveData(false);
     }
   }catch(e){
-    console.error("Gagal memuat data, memakai default.", e);
+    // Normal on first-ever load: the key doesn't exist yet, so get() throws.
+    // Fall back to defaults; we'll try to create the key below.
     siteData = JSON.parse(JSON.stringify(DEFAULT_DATA));
   }
   dataLoaded = true;
   renderPublicSite();
+
+  // Make sure the key exists in storage for next time / for the admin panel to build on.
+  try{
+    const check = await window.storage.get(STORAGE_KEY, true).catch(()=>null);
+    if(!check){ await window.storage.set(STORAGE_KEY, JSON.stringify(siteData), true); }
+  }catch(e){
+    storageWorks = false;
+    console.warn("Penyimpanan (storage) tidak tersedia di lingkungan ini. Situs tetap berjalan, tapi perubahan lewat Panel Admin mungkin tidak tersimpan permanen sampai file ini dibuka lewat Claude.", e);
+  }
 }
 
 async function saveData(showToast){
