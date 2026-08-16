@@ -20,6 +20,7 @@
   --nav:64px;
   --disp:'Barlow Condensed',Impact,sans-serif;
   --body:'Barlow',Helvetica,Arial,sans-serif;
+  --ok:#25d366;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -82,6 +83,7 @@ body.menu-open .drawer{transform:translateY(0)}
 .arrows{display:flex;gap:8px}
 .arrows button{width:42px;height:42px;border:1px solid rgba(255,255,255,.5);color:#fff;font-size:18px;line-height:1;transition:.25s}
 .arrows button:hover{background:#fff;color:#000}
+.hero-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--disp);letter-spacing:.2em;text-transform:uppercase;font-size:13px}
 
 /* ---------- SECTION ---------- */
 .sec{padding:74px 20px}
@@ -153,12 +155,63 @@ body.menu-open .drawer{transform:translateY(0)}
 .social a:hover{background:#fff;color:#000}
 .flinks{display:flex;justify-content:center;gap:18px;font-family:var(--disp);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#8a8a8a;margin-bottom:16px;flex-wrap:wrap}
 .copy{font-size:11px;color:#5e5e5e;line-height:1.7;max-width:620px;margin:0 auto}
+.admin-link{opacity:.35;transition:opacity .2s}
+.admin-link:hover{opacity:1}
 
 /* ---------- FLOATING ---------- */
 .fab{position:fixed;right:14px;bottom:14px;z-index:57;display:flex;flex-direction:column;gap:10px;align-items:flex-end}
-.fab a{display:flex;align-items:center;gap:8px;padding:12px 16px;font-family:var(--disp);font-size:13px;letter-spacing:.14em;text-transform:uppercase;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.fab a,.fab button{display:flex;align-items:center;gap:8px;padding:12px 16px;font-family:var(--disp);font-size:13px;letter-spacing:.14em;text-transform:uppercase;box-shadow:0 6px 18px rgba(0,0,0,.25)}
 .fab .wa{background:#25d366;color:#0b3d20}
 .fab .tr{background:var(--ink);color:#fff}
+.fab .admin-fab{background:#fff;color:var(--ink);border:1px solid var(--ink)}
+
+/* ---------- ADMIN: LOGIN MODAL ---------- */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.show{display:flex}
+.login-box{background:#fff;width:100%;max-width:360px;padding:34px 28px;position:relative}
+.login-box h3{font-family:var(--disp);text-transform:uppercase;letter-spacing:.1em;font-size:24px;margin-bottom:6px}
+.login-box p.sub{font-size:13px;color:var(--mute);margin-bottom:22px}
+.login-box input{width:100%;border:1px solid var(--line);padding:12px 14px;font-family:var(--body);font-size:15px;margin-bottom:12px}
+.login-box button.submit{width:100%;background:var(--ink);color:#fff;padding:13px;font-family:var(--disp);letter-spacing:.18em;text-transform:uppercase;font-size:14px}
+.login-box .close-x{position:absolute;top:12px;right:14px;font-size:22px;line-height:1;color:var(--mute)}
+.login-err{color:#c0392b;font-size:13px;margin-bottom:10px;display:none}
+.login-hint{margin-top:16px;font-size:11px;color:var(--mute);line-height:1.6;border-top:1px solid var(--line);padding-top:12px}
+
+/* ---------- ADMIN PANEL ---------- */
+.admin-panel{position:fixed;inset:0;background:#fff;z-index:190;display:none;flex-direction:column}
+.admin-panel.show{display:flex}
+.admin-top{background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:16px 18px;flex:0 0 auto}
+.admin-top strong{font-family:var(--disp);letter-spacing:.14em;text-transform:uppercase;font-size:16px}
+.admin-top .acts{display:flex;gap:10px;align-items:center}
+.admin-top button{font-family:var(--disp);font-size:12px;letter-spacing:.12em;text-transform:uppercase;padding:8px 12px;border:1px solid #444}
+.admin-top button.primary{background:#fff;color:#000;border-color:#fff}
+.admin-tabs{display:flex;gap:4px;overflow-x:auto;background:#111;padding:0 14px;flex:0 0 auto;scrollbar-width:none}
+.admin-tabs::-webkit-scrollbar{display:none}
+.admin-tabs button{white-space:nowrap;color:#999;font-family:var(--disp);font-size:13px;letter-spacing:.1em;text-transform:uppercase;padding:12px 14px;border-bottom:3px solid transparent}
+.admin-tabs button.on{color:#fff;border-color:#fff}
+.admin-body{flex:1 1 auto;overflow-y:auto;padding:20px 16px 100px;background:#fafafa}
+.admin-section-title{font-family:var(--disp);text-transform:uppercase;letter-spacing:.1em;font-size:18px;margin-bottom:4px}
+.admin-section-sub{font-size:13px;color:var(--mute);margin-bottom:18px}
+.a-item{background:#fff;border:1px solid var(--line);padding:16px;margin-bottom:14px;position:relative}
+.a-item .a-row{display:grid;gap:10px;margin-bottom:10px}
+.a-item label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin-bottom:4px;font-family:var(--disp)}
+.a-item input[type=text],.a-item input[type=url],.a-item textarea,.a-item input[type=tel]{width:100%;border:1px solid var(--line);padding:10px 11px;font-family:var(--body);font-size:14px;background:#fff}
+.a-item textarea{resize:vertical;min-height:60px}
+.a-remove{position:absolute;top:12px;right:12px;font-size:12px;font-family:var(--disp);letter-spacing:.08em;text-transform:uppercase;color:#c0392b}
+.a-thumb-preview{width:100%;aspect-ratio:4/3;background:#eee;background-size:cover;background-position:center;margin-bottom:8px;display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-size:11px;color:#999;letter-spacing:.1em;text-transform:uppercase}
+.a-img-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.a-img-controls input[type=file]{font-size:12px;flex:1 1 160px}
+.a-add{width:100%;border:1px dashed var(--ink);padding:14px;font-family:var(--disp);letter-spacing:.14em;text-transform:uppercase;font-size:13px;margin-top:4px;background:#fff}
+.a-add:hover{background:#f0f0f0}
+.a-savebar{position:fixed;left:0;right:0;bottom:0;background:var(--ink);padding:12px 16px;display:flex;gap:10px;align-items:center;justify-content:space-between;z-index:195}
+.a-savebar span{color:#9a9a9a;font-size:12px}
+.a-savebar button{background:#fff;color:#000;font-family:var(--disp);letter-spacing:.14em;text-transform:uppercase;font-size:14px;padding:12px 22px}
+.a-toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-140%);background:var(--ink);color:#fff;padding:12px 20px;font-family:var(--disp);letter-spacing:.1em;text-transform:uppercase;font-size:13px;z-index:210;transition:transform .3s;box-shadow:0 8px 20px rgba(0,0,0,.3)}
+.a-toast.show{transform:translateX(-50%) translateY(0)}
+.a-two-col{display:grid;gap:10px}
+.a-danger{border:1px solid #c0392b;padding:16px;margin-top:20px}
+.a-danger h4{color:#c0392b;font-family:var(--disp);text-transform:uppercase;letter-spacing:.08em;font-size:14px;margin-bottom:6px}
+.a-danger button{margin-top:10px;background:#c0392b;color:#fff;padding:10px 16px;font-family:var(--disp);letter-spacing:.1em;text-transform:uppercase;font-size:12px}
 
 @media(min-width:760px){
   .sec{padding:96px 40px}
@@ -170,6 +223,10 @@ body.menu-open .drawer{transform:translateY(0)}
   .header,.topbar{padding:0 40px}
   .news-item{flex:0 0 300px}
   .form .row{grid-template-columns:1fr 1fr}
+  .a-row{grid-template-columns:1fr 1fr}
+  .a-two-col{grid-template-columns:1fr 1fr}
+  .admin-body{padding:28px 40px 100px}
+  .a-savebar{padding:14px 40px}
 }
 @media(min-width:1080px){
   .mainnav{display:flex}
@@ -219,6 +276,7 @@ body.menu-open .drawer{transform:translateY(0)}
 
 <!-- HERO -->
 <section class="hero" id="hero">
+  <div class="hero-loading" id="heroLoading">Memuat...</div>
   <div id="slides"></div>
   <div class="hero-nav">
     <div class="dots" id="dots"></div>
@@ -294,6 +352,7 @@ body.menu-open .drawer{transform:translateY(0)}
     <a href="#accessories">Accessories</a>
     <a href="#heritage">Heritage</a>
     <a href="#dealer">Dealer</a>
+    <a href="#" id="adminOpenLink" class="admin-link">Admin</a>
   </div>
   <p class="copy">
     © SRISP 2026 — PT Auto Mitra Utama.<br>
@@ -304,77 +363,218 @@ body.menu-open .drawer{transform:translateY(0)}
 <div class="fab">
   <a class="wa" id="waBtn" href="#" target="_blank" rel="noopener">WhatsApp</a>
   <a class="tr" href="#testride">Test Ride</a>
+  <button class="admin-fab" id="adminFab" style="display:none">Panel Admin</button>
 </div>
+
+<!-- LOGIN MODAL -->
+<div class="modal-overlay" id="loginOverlay">
+  <div class="login-box">
+    <span class="close-x" id="loginClose">&times;</span>
+    <h3>Login Admin</h3>
+    <p class="sub">Masuk untuk mengubah teks, foto, harga, dan info lain di situs ini.</p>
+    <div class="login-err" id="loginErr">Password salah, coba lagi.</div>
+    <input type="password" id="loginPass" placeholder="Password admin" autocomplete="off">
+    <button class="submit" id="loginSubmit">Masuk</button>
+    <div class="login-hint">Default password: <strong>vespa2026</strong>. Segera ganti lewat tab "Pengaturan" setelah login. Catatan: proteksi ini berjalan di sisi browser (cocok untuk membatasi akses tim internal), bukan sistem login tingkat enterprise.</div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="admin-panel" id="adminPanel">
+  <div class="admin-top">
+    <strong>Panel Admin — Vespa</strong>
+    <div class="acts">
+      <button id="adminLogout">Keluar</button>
+      <button id="adminClose">Tutup ✕</button>
+    </div>
+  </div>
+  <div class="admin-tabs" id="adminTabs">
+    <button data-tab="hero" class="on">Hero Slide</button>
+    <button data-tab="models">Daftar Model</button>
+    <button data-tab="news">Berita</button>
+    <button data-tab="contact">Kontak &amp; Kota</button>
+    <button data-tab="settings">Pengaturan</button>
+  </div>
+  <div class="admin-body" id="adminBody"></div>
+  <div class="a-savebar">
+    <span id="saveHint">Perubahan belum tersimpan otomatis.</span>
+    <button id="saveAllBtn">Simpan Semua Perubahan</button>
+  </div>
+</div>
+<div class="a-toast" id="toast"></div>
 
 <script>
 /* =========================================================
-   KONFIGURASI — ubah bagian ini saja untuk data & gambar
+   DATA DEFAULT — dipakai hanya saat pertama kali situs dibuka
+   Setelah itu semua data disimpan & dibaca dari storage bersama,
+   dan bisa diubah lewat Panel Admin (login di footer / tombol Admin).
    ========================================================= */
-const CONFIG = {
-  wa: "6285260699191",           // nomor WhatsApp dealer
-  waText: "Halo Admin, saya ingin tanya unit Vespa"
+const DEFAULT_DATA = {
+  wa: "6285260699191",
+  waText: "Halo Admin, saya ingin tanya unit Vespa",
+  adminPassword: "vespa2026",
+  slides: [
+    {eyebrow:"New", title:"GTS Super Tech 250", desc:"Mesin baru 250cc untuk petualangan urban.", cta:"Discover More", img:""},
+    {eyebrow:"Anniversary", title:"Vespa 80th Limited Edition", desc:"Delapan dekade ikon dua roda.", cta:"Discover More", img:""},
+    {eyebrow:"Icon", title:"Primavera", desc:"Fuel your passion, unlock new worlds.", cta:"Discover More", img:""},
+    {eyebrow:"Sport", title:"Sprint Tech", desc:"Karakter sporty dengan teknologi terkini.", cta:"Discover More", img:""},
+    {eyebrow:"Electric", title:"Vespa Elettrica", desc:"Berkendara tanpa emisi, tanpa suara.", cta:"Discover More", img:""}
+  ],
+  models: [
+    {name:"Vespa 80th Limited Edition", cat:"Special", price:"", tag:"Limited", img:""},
+    {name:"GTS Super Tech 250",         cat:"GTS",     price:"", tag:"New",     img:""},
+    {name:"Vespa 946 Horse",            cat:"Special", price:"", tag:"Limited", img:""},
+    {name:"Vespa GTV Officina 8",       cat:"GTV",     price:"", tag:"",        img:""},
+    {name:"Vespa Sprint Officina 8",    cat:"Sprint",  price:"", tag:"",        img:""},
+    {name:"Vespa Sprint Tech",          cat:"Sprint",  price:"", tag:"",        img:""},
+    {name:"Sprint S",                   cat:"Sprint",  price:"", tag:"",        img:""},
+    {name:"Sprint",                     cat:"Sprint",  price:"", tag:"",        img:""},
+    {name:"Primavera S",                cat:"Primavera",price:"",tag:"",        img:""},
+    {name:"Primavera",                  cat:"Primavera",price:"",tag:"",        img:""},
+    {name:"Vespa Elettrica",            cat:"Elettrica",price:"",tag:"",        img:""},
+    {name:"GTV",                        cat:"GTV",     price:"", tag:"",        img:""},
+    {name:"GTS Super Sport 150",        cat:"GTS",     price:"", tag:"",        img:""},
+    {name:"GTS Classic 150",            cat:"GTS",     price:"", tag:"",        img:""},
+    {name:"LX",                         cat:"LX",      price:"", tag:"",        img:""}
+  ],
+  news: [
+    {date:"29 Mei 2026", title:"Vespa GTS Super Tech terbaru hadir dengan mesin 250cc untuk petualangan urban", img:""},
+    {date:"26 Mei 2026", title:"Vespa 80th: perayaan delapan dekade sang ikon", img:""},
+    {date:"1 Apr 2026",  title:"Eksplorasi gaya baru bersama brand Piaggio Group setelah masa liburan", img:""},
+    {date:"30 Mar 2026", title:"Motoplex 4 Brand resmi dibuka di Makassar", img:""},
+    {date:"17 Mar 2026", title:"Primavera dan Sprint kini bermesin 180cc", img:""}
+  ],
+  kota: ["Jakarta","Bekasi","Bogor","Depok","Tangerang","Bandung","Cirebon","Semarang","Solo","Yogyakarta","Surabaya","Sidoarjo","Malang","Denpasar","Medan","Padang","Palembang","Pekanbaru","Lampung","Pontianak","Banjarmasin","Balikpapan","Samarinda","Makassar"]
 };
 
-/* Isi "img" dengan URL gambar Anda sendiri. Kosong = placeholder. */
-const SLIDES = [
-  {eyebrow:"New", title:"GTS Super Tech 250", desc:"Mesin baru 250cc untuk petualangan urban.", cta:"Discover More", img:""},
-  {eyebrow:"Anniversary", title:"Vespa 80th Limited Edition", desc:"Delapan dekade ikon dua roda.", cta:"Discover More", img:""},
-  {eyebrow:"Icon", title:"Primavera", desc:"Fuel your passion, unlock new worlds.", cta:"Discover More", img:""},
-  {eyebrow:"Sport", title:"Sprint Tech", desc:"Karakter sporty dengan teknologi terkini.", cta:"Discover More", img:""},
-  {eyebrow:"Electric", title:"Vespa Elettrica", desc:"Berkendara tanpa emisi, tanpa suara.", cta:"Discover More", img:""}
-];
+const STORAGE_KEY = "vespa-site-data";
+let siteData = null;
+let isAdmin = false;
+let dataLoaded = false;
 
-const MODELS = [
-  {name:"Vespa 80th Limited Edition", cat:"Special", price:"", tag:"Limited", img:""},
-  {name:"GTS Super Tech 250",         cat:"GTS",     price:"", tag:"New",     img:""},
-  {name:"Vespa 946 Horse",            cat:"Special", price:"", tag:"Limited", img:""},
-  {name:"Vespa GTV Officina 8",       cat:"GTV",     price:"", tag:"",        img:""},
-  {name:"Vespa Sprint Officina 8",    cat:"Sprint",  price:"", tag:"",        img:""},
-  {name:"Vespa Sprint Tech",          cat:"Sprint",  price:"", tag:"",        img:""},
-  {name:"Sprint S",                   cat:"Sprint",  price:"", tag:"",        img:""},
-  {name:"Sprint",                     cat:"Sprint",  price:"", tag:"",        img:""},
-  {name:"Primavera S",                cat:"Primavera",price:"",tag:"",        img:""},
-  {name:"Primavera",                  cat:"Primavera",price:"",tag:"",        img:""},
-  {name:"Vespa Elettrica",            cat:"Elettrica",price:"",tag:"",        img:""},
-  {name:"GTV",                        cat:"GTV",     price:"", tag:"",        img:""},
-  {name:"GTS Super Sport 150",        cat:"GTS",     price:"", tag:"",        img:""},
-  {name:"GTS Classic 150",            cat:"GTS",     price:"", tag:"",        img:""},
-  {name:"LX",                         cat:"LX",      price:"", tag:"",        img:""}
-];
+/* ================= STORAGE ================= */
+async function loadData(){
+  try{
+    const res = await window.storage.get(STORAGE_KEY, true);
+    if(res && res.value){
+      siteData = JSON.parse(res.value);
+      // backfill any missing fields if defaults grew over time
+      siteData = Object.assign({}, DEFAULT_DATA, siteData);
+    } else {
+      siteData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+      await saveData(false);
+    }
+  }catch(e){
+    console.error("Gagal memuat data, memakai default.", e);
+    siteData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+  }
+  dataLoaded = true;
+  renderPublicSite();
+}
 
-const NEWS = [
-  {date:"29 Mei 2026", title:"Vespa GTS Super Tech terbaru hadir dengan mesin 250cc untuk petualangan urban", img:""},
-  {date:"26 Mei 2026", title:"Vespa 80th: perayaan delapan dekade sang ikon", img:""},
-  {date:"1 Apr 2026",  title:"Eksplorasi gaya baru bersama brand Piaggio Group setelah masa liburan", img:""},
-  {date:"30 Mar 2026", title:"Motoplex 4 Brand resmi dibuka di Makassar", img:""},
-  {date:"17 Mar 2026", title:"Primavera dan Sprint kini bermesin 180cc", img:""}
-];
+async function saveData(showToast){
+  try{
+    const res = await window.storage.set(STORAGE_KEY, JSON.stringify(siteData), true);
+    if(!res) throw new Error("no result");
+    if(showToast!==false) showToastMsg("Tersimpan ✓ Perubahan langsung tampil di situs.");
+    renderPublicSite();
+    return true;
+  }catch(e){
+    console.error(e);
+    if(showToast!==false) showToastMsg("Gagal menyimpan, coba lagi.");
+    return false;
+  }
+}
 
-const KOTA = ["Jakarta","Bekasi","Bogor","Depok","Tangerang","Bandung","Cirebon","Semarang","Solo","Yogyakarta","Surabaya","Sidoarjo","Malang","Denpasar","Medan","Padang","Palembang","Pekanbaru","Lampung","Pontianak","Banjarmasin","Balikpapan","Samarinda","Makassar"];
+function showToastMsg(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(showToastMsg._t);
+  showToastMsg._t = setTimeout(()=>t.classList.remove('show'), 2600);
+}
 
-/* ================= RENDER ================= */
-const ph = (label) => `<div class="ph">${label}</div>`;
+/* ================= RENDER PUBLIC SITE ================= */
+const ph = (label) => `<div class="ph">${escapeHtml(label)}</div>`;
 const bgStyle = (img) => img ? `background-image:url('${img}')` : 'background:#1c1c1c';
-
-/* Hero */
-const slidesEl = document.getElementById('slides');
-const dotsEl = document.getElementById('dots');
-slidesEl.innerHTML = SLIDES.map((s,i)=>`
-  <div class="slide ${i===0?'on':''}">
-    <div class="bg" style="${bgStyle(s.img)}"></div>
-    <div class="cap">
-      <div class="eyebrow">${s.eyebrow}</div>
-      <h2>${s.title}</h2>
-      <p>${s.desc}</p>
-      <a class="btn-line" href="#model">${s.cta}</a>
-    </div>
-  </div>`).join('');
-dotsEl.innerHTML = SLIDES.map((_,i)=>`<i data-i="${i}" class="${i===0?'on':''}"></i>`).join('');
+function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 let cur = 0, timer;
+function renderPublicSite(){
+  document.getElementById('heroLoading').style.display = 'none';
+
+  /* Hero */
+  const slidesEl = document.getElementById('slides');
+  const dotsEl = document.getElementById('dots');
+  slidesEl.innerHTML = siteData.slides.map((s,i)=>`
+    <div class="slide ${i===0?'on':''}">
+      <div class="bg" style="${bgStyle(s.img)}"></div>
+      <div class="cap">
+        <div class="eyebrow">${escapeHtml(s.eyebrow)}</div>
+        <h2>${escapeHtml(s.title)}</h2>
+        <p>${escapeHtml(s.desc)}</p>
+        <a class="btn-line" href="#model">${escapeHtml(s.cta)}</a>
+      </div>
+    </div>`).join('');
+  dotsEl.innerHTML = siteData.slides.map((_,i)=>`<i data-i="${i}" class="${i===0?'on':''}"></i>`).join('');
+  cur = 0;
+  auto();
+
+  /* Range */
+  const cats = ['Semua', ...new Set(siteData.models.map(m=>m.cat))];
+  const filtersEl = document.getElementById('filters');
+  filtersEl.innerHTML = cats.map((c,i)=>`<button data-c="${escapeHtml(c)}" class="${i===0?'on':''}">${escapeHtml(c)}</button>`).join('');
+  drawGrid('Semua');
+  filtersEl.onclick = e => {
+    const b = e.target.closest('button'); if(!b) return;
+    filtersEl.querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    drawGrid(b.dataset.c);
+  };
+
+  /* Tiles placeholder */
+  document.querySelectorAll('[data-ph]').forEach(el=>{
+    el.style.background = 'repeating-linear-gradient(135deg,#232323 0 14px,#1b1b1b 14px 28px)';
+  });
+
+  /* News */
+  document.getElementById('newsRail').innerHTML = siteData.news.map(n=>`
+    <a class="news-item" href="#news">
+      <div class="thumb" style="${n.img?`background-image:url('${n.img}')`:''}">${n.img?'':ph('Berita')}</div>
+      <div class="body">
+        <div class="date">${escapeHtml(n.date)}</div>
+        <h5>${escapeHtml(n.title)}</h5>
+      </div>
+    </a>`).join('');
+
+  /* Form selects */
+  document.getElementById('leadModel').innerHTML =
+    '<option value="">Pilih model</option>' + siteData.models.map(m=>`<option>${escapeHtml(m.name)}</option>`).join('');
+  document.getElementById('leadKota').innerHTML =
+    '<option value="">Pilih kota</option>' + siteData.kota.map(k=>`<option>${escapeHtml(k)}</option>`).join('');
+
+  /* WhatsApp */
+  document.getElementById('waBtn').href =
+    `https://wa.me/${siteData.wa}?text=${encodeURIComponent(siteData.waText)}`;
+}
+
+function drawGrid(cat){
+  const gridEl = document.getElementById('grid');
+  const list = cat==='Semua' ? siteData.models : siteData.models.filter(m=>m.cat===cat);
+  gridEl.innerHTML = list.map(m=>`
+    <a class="card" href="#testride">
+      ${m.tag?`<span class="tagline">${escapeHtml(m.tag)}</span>`:''}
+      <div class="thumb" style="${m.img?`background-image:url('${m.img}')`:''}">${m.img?'':ph(m.cat)}</div>
+      <h4>${escapeHtml(m.name)}</h4>
+      ${m.price?`<div class="price">${escapeHtml(m.price)}</div>`:`<div class="price">Harga on request</div>`}
+      <span class="more">Lihat</span>
+    </a>`).join('');
+}
+
 const slideEls = () => document.querySelectorAll('.slide');
 function go(n){
-  const els = slideEls(), ds = dotsEl.querySelectorAll('i');
+  const els = slideEls(); if(!els.length) return;
+  const ds = document.getElementById('dots').querySelectorAll('i');
   cur = (n + els.length) % els.length;
   els.forEach((e,i)=>e.classList.toggle('on', i===cur));
   ds.forEach((d,i)=>d.classList.toggle('on', i===cur));
@@ -382,10 +582,8 @@ function go(n){
 function auto(){ clearInterval(timer); timer = setInterval(()=>go(cur+1), 6000); }
 document.getElementById('next').onclick = ()=>{go(cur+1);auto()};
 document.getElementById('prev').onclick = ()=>{go(cur-1);auto()};
-dotsEl.onclick = e => { if(e.target.dataset.i!==undefined){ go(+e.target.dataset.i); auto(); } };
-auto();
+document.getElementById('dots').onclick = e => { if(e.target.dataset.i!==undefined){ go(+e.target.dataset.i); auto(); } };
 
-/* swipe hero */
 let sx=null;
 document.getElementById('hero').addEventListener('touchstart',e=>sx=e.touches[0].clientX,{passive:true});
 document.getElementById('hero').addEventListener('touchend',e=>{
@@ -395,56 +593,6 @@ document.getElementById('hero').addEventListener('touchend',e=>{
   sx=null;
 },{passive:true});
 
-/* Range */
-const cats = ['Semua', ...new Set(MODELS.map(m=>m.cat))];
-const filtersEl = document.getElementById('filters');
-const gridEl = document.getElementById('grid');
-filtersEl.innerHTML = cats.map((c,i)=>`<button data-c="${c}" class="${i===0?'on':''}">${c}</button>`).join('');
-function drawGrid(cat){
-  const list = cat==='Semua' ? MODELS : MODELS.filter(m=>m.cat===cat);
-  gridEl.innerHTML = list.map(m=>`
-    <a class="card" href="#testride">
-      ${m.tag?`<span class="tagline">${m.tag}</span>`:''}
-      <div class="thumb" style="${m.img?`background-image:url('${m.img}')`:''}">${m.img?'':ph(m.cat)}</div>
-      <h4>${m.name}</h4>
-      ${m.price?`<div class="price">${m.price}</div>`:`<div class="price">Harga on request</div>`}
-      <span class="more">Lihat</span>
-    </a>`).join('');
-}
-drawGrid('Semua');
-filtersEl.onclick = e => {
-  const b = e.target.closest('button'); if(!b) return;
-  filtersEl.querySelectorAll('button').forEach(x=>x.classList.remove('on'));
-  b.classList.add('on');
-  drawGrid(b.dataset.c);
-};
-
-/* Tiles placeholder */
-document.querySelectorAll('[data-ph]').forEach(el=>{
-  el.style.background = 'repeating-linear-gradient(135deg,#232323 0 14px,#1b1b1b 14px 28px)';
-});
-
-/* News */
-document.getElementById('newsRail').innerHTML = NEWS.map(n=>`
-  <a class="news-item" href="#news">
-    <div class="thumb" style="${n.img?`background-image:url('${n.img}')`:''}">${n.img?'':ph('Berita')}</div>
-    <div class="body">
-      <div class="date">${n.date}</div>
-      <h5>${n.title}</h5>
-    </div>
-  </a>`).join('');
-
-/* Form selects */
-document.getElementById('leadModel').innerHTML =
-  '<option value="">Pilih model</option>' + MODELS.map(m=>`<option>${m.name}</option>`).join('');
-document.getElementById('leadKota').innerHTML =
-  '<option value="">Pilih kota</option>' + KOTA.map(k=>`<option>${k}</option>`).join('');
-
-/* WhatsApp */
-document.getElementById('waBtn').href =
-  `https://wa.me/${CONFIG.wa}?text=${encodeURIComponent(CONFIG.waText)}`;
-
-/* Submit → buka WhatsApp dengan isi form */
 document.getElementById('leadForm').addEventListener('submit', e=>{
   e.preventDefault();
   const f = e.target;
@@ -455,7 +603,7 @@ Email: ${f.email.value || '-'}
 Model: ${f.model.value || '-'}
 Kota: ${f.kota.value || '-'}
 Catatan: ${f.pesan.value || '-'}`;
-  window.open(`https://wa.me/${CONFIG.wa}?text=${encodeURIComponent(txt)}`,'_blank');
+  window.open(`https://wa.me/${siteData.wa}?text=${encodeURIComponent(txt)}`,'_blank');
   document.getElementById('leadOk').style.display='block';
   f.reset();
 });
@@ -464,12 +612,277 @@ document.getElementById('nlForm').addEventListener('submit', e=>{
   alert('Terima kasih, e-mail Anda sudah terdaftar.');
 });
 
-/* Header & menu */
 const header = document.getElementById('header');
 const onScroll = () => header.classList.toggle('solid', window.scrollY > window.innerHeight - 120);
 window.addEventListener('scroll', onScroll, {passive:true}); onScroll();
 document.getElementById('burger').onclick = () => document.body.classList.toggle('menu-open');
 document.getElementById('drawer').onclick = e => { if(e.target.tagName==='A') document.body.classList.remove('menu-open'); };
+
+/* =========================================================
+   ADMIN: LOGIN
+   ========================================================= */
+const loginOverlay = document.getElementById('loginOverlay');
+function openLogin(){
+  if(!dataLoaded){ showToastMsg("Data masih dimuat, coba sesaat lagi."); return; }
+  document.getElementById('loginErr').style.display='none';
+  document.getElementById('loginPass').value='';
+  loginOverlay.classList.add('show');
+  document.getElementById('loginPass').focus();
+}
+function closeLogin(){ loginOverlay.classList.remove('show'); }
+document.getElementById('adminOpenLink').addEventListener('click', e=>{ e.preventDefault(); openLogin(); });
+document.getElementById('loginClose').addEventListener('click', closeLogin);
+loginOverlay.addEventListener('click', e=>{ if(e.target===loginOverlay) closeLogin(); });
+document.getElementById('loginSubmit').addEventListener('click', doLogin);
+document.getElementById('loginPass').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+
+function doLogin(){
+  const val = document.getElementById('loginPass').value;
+  if(val === siteData.adminPassword){
+    isAdmin = true;
+    closeLogin();
+    document.getElementById('adminFab').style.display = 'flex';
+    openAdminPanel();
+  } else {
+    document.getElementById('loginErr').style.display='block';
+  }
+}
+document.getElementById('adminFab').addEventListener('click', openAdminPanel);
+document.getElementById('adminClose').addEventListener('click', ()=>document.getElementById('adminPanel').classList.remove('show'));
+document.getElementById('adminLogout').addEventListener('click', ()=>{
+  isAdmin = false;
+  document.getElementById('adminPanel').classList.remove('show');
+  document.getElementById('adminFab').style.display = 'none';
+});
+document.getElementById('saveAllBtn').addEventListener('click', ()=>saveData(true));
+
+/* =========================================================
+   ADMIN: PANEL
+   ========================================================= */
+let currentTab = 'hero';
+function openAdminPanel(){
+  document.getElementById('adminPanel').classList.add('show');
+  renderAdminTab(currentTab);
+}
+document.getElementById('adminTabs').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  document.querySelectorAll('#adminTabs button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  currentTab = b.dataset.tab;
+  renderAdminTab(currentTab);
+});
+
+function renderAdminTab(tab){
+  const body = document.getElementById('adminBody');
+  if(tab==='hero') body.innerHTML = adminListEditor('slides', 'Hero Slide', 'Gambar besar di paling atas halaman (carousel).', [
+    {key:'eyebrow', label:'Label kecil (eyebrow)', type:'text', ph:'cth: New'},
+    {key:'title', label:'Judul', type:'text', ph:'cth: GTS Super Tech 250'},
+    {key:'desc', label:'Deskripsi', type:'textarea', ph:'Kalimat singkat pendukung'},
+    {key:'cta', label:'Teks tombol', type:'text', ph:'cth: Discover More'},
+    {key:'img', label:'Foto', type:'image'}
+  ], {eyebrow:'', title:'Judul Baru', desc:'', cta:'Discover More', img:''});
+
+  else if(tab==='models') body.innerHTML = adminListEditor('models', 'Daftar Model', 'Kartu model yang tampil di bagian "Discover The Range".', [
+    {key:'name', label:'Nama model', type:'text', ph:'cth: Primavera'},
+    {key:'cat', label:'Kategori', type:'text', ph:'cth: Primavera, GTS, Sprint...'},
+    {key:'price', label:'Harga (kosongkan utk "on request")', type:'text', ph:'cth: Rp 65.000.000'},
+    {key:'tag', label:'Label (opsional)', type:'text', ph:'cth: New / Limited'},
+    {key:'img', label:'Foto', type:'image'}
+  ], {name:'Model Baru', cat:'Sprint', price:'', tag:'', img:''});
+
+  else if(tab==='news') body.innerHTML = adminListEditor('news', 'Berita & Promo', 'Artikel yang tampil di bagian News.', [
+    {key:'date', label:'Tanggal', type:'text', ph:'cth: 29 Mei 2026'},
+    {key:'title', label:'Judul berita', type:'textarea', ph:'Judul berita'},
+    {key:'img', label:'Foto', type:'image'}
+  ], {date:'', title:'Judul berita baru', img:''});
+
+  else if(tab==='contact') body.innerHTML = adminContactEditor();
+  else if(tab==='settings') body.innerHTML = adminSettingsEditor();
+
+  bindAdminInputs(tab);
+}
+
+/* Generic list editor (hero / models / news) */
+function adminListEditor(arrKey, title, sub, fields, blank){
+  const items = siteData[arrKey];
+  const itemsHtml = items.map((item,idx)=>`
+    <div class="a-item" data-arr="${arrKey}" data-idx="${idx}">
+      <button class="a-remove" data-action="remove">Hapus ✕</button>
+      <div class="a-row">
+        ${fields.map(f=>{
+          if(f.type==='image'){
+            return `<div style="grid-column:1/-1">
+              <label>${f.label}</label>
+              <div class="a-thumb-preview" data-preview style="${item[f.key]?`background-image:url('${item[f.key]}')`:''}">${item[f.key]?'':'Belum ada foto'}</div>
+              <div class="a-img-controls">
+                <input type="file" accept="image/*" data-field="${f.key}" data-action="upload">
+                <input type="url" data-field="${f.key}" data-action="url" placeholder="atau tempel URL gambar" value="${item[f.key] && item[f.key].startsWith('http') ? escapeAttr(item[f.key]) : ''}">
+              </div>
+            </div>`;
+          }
+          if(f.type==='textarea'){
+            return `<div style="grid-column:1/-1"><label>${f.label}</label><textarea data-field="${f.key}" placeholder="${f.ph||''}">${escapeHtml(item[f.key])}</textarea></div>`;
+          }
+          return `<div><label>${f.label}</label><input type="text" data-field="${f.key}" placeholder="${f.ph||''}" value="${escapeAttr(item[f.key])}"></div>`;
+        }).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  return `
+    <div class="admin-section-title">${title}</div>
+    <div class="admin-section-sub">${sub}</div>
+    ${itemsHtml || '<p style="color:var(--mute);font-size:14px;margin-bottom:14px">Belum ada item.</p>'}
+    <button class="a-add" data-action="add-item" data-arr="${arrKey}" data-blank='${JSON.stringify(blank)}'>+ Tambah ${title}</button>
+  `;
+}
+
+function escapeAttr(s){ return escapeHtml(s).replace(/\n/g,'&#10;'); }
+
+function adminContactEditor(){
+  const d = siteData;
+  return `
+    <div class="admin-section-title">Kontak &amp; Kota</div>
+    <div class="admin-section-sub">Nomor WhatsApp, pesan default, dan daftar kota pada formulir Test Ride.</div>
+    <div class="a-item">
+      <div class="a-row">
+        <div><label>Nomor WhatsApp (format 62xxxxxxxxxx)</label><input type="tel" id="f-wa" value="${escapeAttr(d.wa)}"></div>
+        <div><label>Pesan pembuka WhatsApp</label><input type="text" id="f-waText" value="${escapeAttr(d.waText)}"></div>
+      </div>
+    </div>
+    <div class="a-item">
+      <label>Daftar kota (pisahkan dengan koma)</label>
+      <textarea id="f-kota" rows="5">${escapeHtml(d.kota.join(', '))}</textarea>
+    </div>
+  `;
+}
+
+function adminSettingsEditor(){
+  return `
+    <div class="admin-section-title">Pengaturan</div>
+    <div class="admin-section-sub">Ganti password admin, atau pulihkan seluruh konten ke bawaan.</div>
+    <div class="a-item">
+      <label>Password admin baru (kosongkan jika tidak ingin mengubah)</label>
+      <input type="text" id="f-newpass" placeholder="Password baru">
+    </div>
+    <div class="a-danger">
+      <h4>Zona Berbahaya</h4>
+      <p style="font-size:13px;color:var(--mute)">Mengembalikan semua teks, harga, dan foto ke pengaturan bawaan situs. Tindakan ini akan langsung tersimpan dan tidak bisa dibatalkan.</p>
+      <button id="resetDefaultBtn">Pulihkan ke Bawaan</button>
+    </div>
+  `;
+}
+
+/* Bind events per tab */
+function bindAdminInputs(tab){
+  const body = document.getElementById('adminBody');
+
+  if(tab==='hero' || tab==='models' || tab==='news'){
+    body.querySelectorAll('.a-item').forEach(itemEl=>{
+      const arr = itemEl.dataset.arr;
+      const idx = +itemEl.dataset.idx;
+
+      itemEl.querySelectorAll('input[type=text],textarea').forEach(inp=>{
+        if(inp.dataset.action==='url') return;
+        inp.addEventListener('input', ()=>{
+          siteData[arr][idx][inp.dataset.field] = inp.value;
+        });
+      });
+
+      const urlInput = itemEl.querySelector('input[data-action="url"]');
+      if(urlInput){
+        urlInput.addEventListener('input', ()=>{
+          siteData[arr][idx][urlInput.dataset.field] = urlInput.value;
+          const preview = itemEl.querySelector('[data-preview]');
+          preview.style.backgroundImage = urlInput.value ? `url('${urlInput.value}')` : '';
+          preview.textContent = urlInput.value ? '' : 'Belum ada foto';
+        });
+      }
+
+      const fileInput = itemEl.querySelector('input[type=file]');
+      if(fileInput){
+        fileInput.addEventListener('change', async ()=>{
+          const file = fileInput.files[0];
+          if(!file) return;
+          try{
+            const dataUrl = await fileToCompressedDataURL(file);
+            siteData[arr][idx][fileInput.dataset.field] = dataUrl;
+            const preview = itemEl.querySelector('[data-preview]');
+            preview.style.backgroundImage = `url('${dataUrl}')`;
+            preview.textContent = '';
+            if(urlInput) urlInput.value = '';
+          }catch(err){
+            showToastMsg('Gagal memproses gambar.');
+          }
+        });
+      }
+
+      const removeBtn = itemEl.querySelector('[data-action="remove"]');
+      removeBtn.addEventListener('click', ()=>{
+        siteData[arr].splice(idx,1);
+        renderAdminTab(tab);
+      });
+    });
+
+    const addBtn = body.querySelector('[data-action="add-item"]');
+    if(addBtn){
+      addBtn.addEventListener('click', ()=>{
+        const blank = JSON.parse(addBtn.dataset.blank);
+        siteData[addBtn.dataset.arr].push(Object.assign({}, blank));
+        renderAdminTab(tab);
+      });
+    }
+  }
+
+  if(tab==='contact'){
+    document.getElementById('f-wa').addEventListener('input', e=> siteData.wa = e.target.value.trim());
+    document.getElementById('f-waText').addEventListener('input', e=> siteData.waText = e.target.value);
+    document.getElementById('f-kota').addEventListener('input', e=>{
+      siteData.kota = e.target.value.split(',').map(s=>s.trim()).filter(Boolean);
+    });
+  }
+
+  if(tab==='settings'){
+    document.getElementById('f-newpass').addEventListener('input', e=>{
+      const v = e.target.value.trim();
+      if(v) siteData.adminPassword = v;
+    });
+    document.getElementById('resetDefaultBtn').addEventListener('click', async ()=>{
+      if(!confirm('Yakin ingin mengembalikan semua konten ke bawaan? Perubahan tidak bisa dibatalkan.')) return;
+      const keepPass = siteData.adminPassword;
+      siteData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+      siteData.adminPassword = keepPass;
+      await saveData(true);
+      renderAdminTab(currentTab);
+    });
+  }
+}
+
+/* Compress uploaded images so shared storage stays small & fast */
+function fileToCompressedDataURL(file, maxW=900, quality=0.72){
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, maxW/img.width);
+        const w = Math.max(1, Math.round(img.width*scale));
+        const h = Math.max(1, Math.round(img.height*scale));
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ================= INIT ================= */
+loadData();
 </script>
 </body>
 </html>
