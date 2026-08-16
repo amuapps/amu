@@ -1,1 +1,958 @@
-puns
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Auto Mitra Utama-Vespa Indonesia</title>
+<meta name="description" content="Katalog Vespa. Temukan model, harga, test ride, dan dealer terdekat.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<!-- ============================================================
+     FIREBASE SDK (compat, tidak perlu build tool / bundler)
+     ============================================================ -->
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-storage-compat.js"></script>
+
+<style>
+:root{
+  --ink:#0d0d0d;
+  --paper:#ffffff;
+  --smoke:#f4f4f4;
+  --line:#e2e2e2;
+  --mute:#8a8a8a;
+  --accent:#0d0d0d;
+  --top:34px;
+  --nav:64px;
+  --disp:'Barlow Condensed',Impact,sans-serif;
+  --body:'Barlow',Helvetica,Arial,sans-serif;
+  --ok:#25d366;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--body);color:var(--ink);background:var(--paper);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+:focus-visible{outline:2px solid #000;outline-offset:2px}
+
+/* ---------- TOP BAR ---------- */
+.topbar{height:var(--top);background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:flex-end;gap:22px;padding:0 18px;font-family:var(--disp);font-size:13px;letter-spacing:.14em;text-transform:uppercase;position:fixed;top:0;left:0;right:0;z-index:60}
+.topbar a{opacity:.75;transition:opacity .2s}
+.topbar a:hover{opacity:1}
+.topbar .lang b{opacity:1}
+.topbar .lang{opacity:1}
+
+/* ---------- HEADER ---------- */
+.header{position:fixed;top:var(--top);left:0;right:0;height:var(--nav);z-index:59;display:flex;align-items:center;justify-content:space-between;padding:0 18px;transition:background .3s,box-shadow .3s;background:transparent}
+.header.solid{background:#fff;box-shadow:0 1px 0 var(--line)}
+.brand{font-family:var(--disp);font-weight:700;font-size:30px;letter-spacing:.28em;text-transform:uppercase;color:#fff;transition:color .3s;padding-left:.28em}
+.header.solid .brand{color:var(--ink)}
+.mainnav{display:none;gap:26px;font-family:var(--disp);font-size:15px;letter-spacing:.13em;text-transform:uppercase}
+.mainnav a{position:relative;color:#fff;transition:color .3s;padding:6px 0}
+.header.solid .mainnav a{color:var(--ink)}
+.mainnav a::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:currentColor;transform:scaleX(0);transform-origin:left;transition:transform .25s}
+.mainnav a:hover::after{transform:scaleX(1)}
+.burger{width:34px;height:24px;position:relative}
+.burger span{position:absolute;left:0;right:0;height:2px;background:#fff;transition:.3s}
+.header.solid .burger span{background:var(--ink)}
+.burger span:nth-child(1){top:0}
+.burger span:nth-child(2){top:11px}
+.burger span:nth-child(3){top:22px}
+body.menu-open .burger span:nth-child(1){top:11px;transform:rotate(45deg);background:#fff}
+body.menu-open .burger span:nth-child(2){opacity:0}
+body.menu-open .burger span:nth-child(3){top:11px;transform:rotate(-45deg);background:#fff}
+
+/* ---------- DRAWER ---------- */
+.drawer{position:fixed;inset:0;background:var(--ink);color:#fff;z-index:58;padding:calc(var(--top) + var(--nav) + 20px) 24px 40px;transform:translateY(-100%);transition:transform .45s cubic-bezier(.7,0,.2,1);overflow-y:auto}
+body.menu-open .drawer{transform:translateY(0)}
+.drawer a{display:block;font-family:var(--disp);font-size:26px;letter-spacing:.1em;text-transform:uppercase;padding:14px 0;border-bottom:1px solid #222}
+.drawer .sub{margin-top:26px;font-size:13px;letter-spacing:.16em;color:var(--mute)}
+.drawer .sub a{font-size:15px;border:0;padding:8px 0;color:#fff}
+
+/* ---------- HERO ---------- */
+.hero{position:relative;height:100svh;min-height:520px;overflow:hidden;background:#111}
+.slide{position:absolute;inset:0;opacity:0;transition:opacity .9s ease;display:flex;align-items:flex-end}
+.slide.on{opacity:1}
+.slide .bg{position:absolute;inset:0;background-size:cover;background-position:center}
+.slide .bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.45) 0%,rgba(0,0,0,0) 38%,rgba(0,0,0,.72) 100%)}
+.slide .cap{position:relative;padding:0 24px 92px;max-width:760px;color:#fff}
+.slide .eyebrow{font-family:var(--disp);font-size:13px;letter-spacing:.3em;text-transform:uppercase;opacity:.85;margin-bottom:10px}
+.slide h2{font-family:var(--disp);font-weight:600;text-transform:uppercase;font-size:clamp(34px,8vw,72px);line-height:.95;letter-spacing:.02em}
+.slide p{margin-top:12px;font-weight:300;font-size:16px;opacity:.9;max-width:46ch}
+.btn-line{display:inline-block;margin-top:20px;font-family:var(--disp);font-size:14px;letter-spacing:.18em;text-transform:uppercase;border:1px solid #fff;padding:12px 30px;transition:.25s}
+.btn-line:hover{background:#fff;color:#000}
+.hero-nav{position:absolute;bottom:34px;left:24px;right:24px;display:flex;align-items:center;justify-content:space-between;z-index:3}
+.dots{display:flex;gap:8px;flex-wrap:wrap}
+.dots i{width:26px;height:2px;background:rgba(255,255,255,.35);cursor:pointer;transition:.3s}
+.dots i.on{background:#fff}
+.arrows{display:flex;gap:8px}
+.arrows button{width:42px;height:42px;border:1px solid rgba(255,255,255,.5);color:#fff;font-size:18px;line-height:1;transition:.25s}
+.arrows button:hover{background:#fff;color:#000}
+.hero-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--disp);letter-spacing:.2em;text-transform:uppercase;font-size:13px}
+
+/* ---------- SECTION ---------- */
+.sec{padding:74px 20px}
+.sec-head{text-align:center;margin-bottom:34px}
+.sec-head h3{font-family:var(--disp);font-weight:600;text-transform:uppercase;font-size:clamp(26px,5vw,42px);letter-spacing:.04em}
+.sec-head span{display:block;font-family:var(--disp);font-size:14px;letter-spacing:.28em;text-transform:uppercase;color:var(--mute);margin-top:8px}
+
+/* ---------- RANGE ---------- */
+.filters{display:flex;gap:8px;overflow-x:auto;padding-bottom:12px;margin-bottom:26px;scrollbar-width:none;justify-content:flex-start}
+.filters::-webkit-scrollbar{display:none}
+.filters button{white-space:nowrap;font-family:var(--disp);font-size:13px;letter-spacing:.16em;text-transform:uppercase;padding:9px 18px;border:1px solid var(--line);transition:.2s}
+.filters button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.card{background:var(--smoke);padding:16px 14px 20px;text-align:center;transition:.3s;position:relative;overflow:hidden}
+.card:hover{background:#ececec}
+.card .thumb{aspect-ratio:4/3;margin-bottom:12px;display:flex;align-items:center;justify-content:center;background-size:cover;background-position:center}
+.card h4{font-family:var(--disp);font-size:17px;text-transform:uppercase;letter-spacing:.08em;line-height:1.15}
+.card .price{font-size:13px;color:var(--mute);margin-top:6px;font-weight:400}
+.card .more{font-family:var(--disp);font-size:12px;letter-spacing:.18em;text-transform:uppercase;margin-top:10px;display:inline-block;border-bottom:1px solid var(--ink)}
+.tagline{display:inline-block;font-family:var(--disp);font-size:11px;letter-spacing:.16em;text-transform:uppercase;background:var(--ink);color:#fff;padding:3px 8px;position:absolute;top:12px;left:12px}
+
+.ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:repeating-linear-gradient(135deg,#e9e9e9 0 12px,#e3e3e3 12px 24px);color:#b4b4b4;font-family:var(--disp);font-size:12px;letter-spacing:.2em;text-transform:uppercase}
+
+/* ---------- TILES ---------- */
+.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.tile{position:relative;aspect-ratio:1/1;background:#1a1a1a;overflow:hidden;display:flex;align-items:flex-end;padding:18px}
+.tile .bg{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform .6s}
+.tile:hover .bg{transform:scale(1.06)}
+.tile::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.75))}
+.tile span{position:relative;z-index:2;color:#fff;font-family:var(--disp);font-size:16px;letter-spacing:.16em;text-transform:uppercase}
+
+/* ---------- NEWS ---------- */
+.news{background:var(--smoke)}
+.news-rail{display:flex;gap:14px;overflow-x:auto;padding-bottom:14px;scroll-snap-type:x mandatory;scrollbar-width:none}
+.news-rail::-webkit-scrollbar{display:none}
+.news-item{flex:0 0 78%;max-width:340px;background:#fff;scroll-snap-align:start}
+.news-item .thumb{aspect-ratio:16/10;background:#ddd;background-size:cover;background-position:center}
+.news-item .body{padding:16px}
+.news-item .date{font-family:var(--disp);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute)}
+.news-item h5{font-size:15px;font-weight:500;line-height:1.4;margin-top:8px}
+.readall{display:block;text-align:center;margin-top:24px;font-family:var(--disp);letter-spacing:.2em;text-transform:uppercase;font-size:14px}
+.readall::after{content:"";display:block;width:110px;height:1px;background:var(--ink);margin:8px auto 0}
+
+/* ---------- LEAD FORM ---------- */
+.lead{background:var(--ink);color:#fff}
+.lead .sec-head h3{color:#fff}
+.lead .sec-head span{color:#7d7d7d}
+.form{max-width:520px;margin:0 auto;display:grid;gap:12px}
+.form input,.form select,.form textarea{width:100%;background:transparent;border:1px solid #333;color:#fff;padding:13px 14px;font-family:var(--body);font-size:15px}
+.form input::placeholder,.form textarea::placeholder{color:#6f6f6f}
+.form select{color:#c9c9c9}
+.form select option{color:#000}
+.form .row{display:grid;gap:12px}
+.form button{background:#fff;color:#000;padding:14px;font-family:var(--disp);letter-spacing:.2em;text-transform:uppercase;font-size:14px;transition:.2s}
+.form button:hover{background:#d8d8d8}
+.form .note{font-size:12px;color:#7d7d7d;line-height:1.5}
+.form .ok{display:none;border:1px solid #2e2e2e;padding:12px;font-size:14px;color:#cfcfcf}
+
+/* ---------- FOOTER ---------- */
+.footer{background:#000;color:#fff;padding:54px 20px 110px;text-align:center}
+.footer .nl{font-family:var(--disp);letter-spacing:.2em;text-transform:uppercase;font-size:15px;margin-bottom:16px}
+.nl-form{display:flex;max-width:420px;margin:0 auto 34px;border-bottom:1px solid #333}
+.nl-form input{flex:1;background:none;border:0;color:#fff;padding:12px 2px;font-size:15px}
+.nl-form input::placeholder{color:#666}
+.nl-form button{font-family:var(--disp);letter-spacing:.16em;text-transform:uppercase;font-size:13px;padding:0 10px}
+.social{display:flex;justify-content:center;gap:18px;margin-bottom:30px}
+.social a{width:38px;height:38px;border:1px solid #2c2c2c;display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-size:13px;letter-spacing:.05em;transition:.2s}
+.social a:hover{background:#fff;color:#000}
+.flinks{display:flex;justify-content:center;gap:18px;font-family:var(--disp);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#8a8a8a;margin-bottom:16px;flex-wrap:wrap}
+.copy{font-size:11px;color:#5e5e5e;line-height:1.7;max-width:620px;margin:0 auto}
+.admin-link{opacity:.35;transition:opacity .2s}
+.admin-link:hover{opacity:1}
+
+/* ---------- FLOATING ---------- */
+.fab{position:fixed;right:14px;bottom:14px;z-index:57;display:flex;flex-direction:column;gap:10px;align-items:flex-end}
+.fab a,.fab button{display:flex;align-items:center;gap:8px;padding:12px 16px;font-family:var(--disp);font-size:13px;letter-spacing:.14em;text-transform:uppercase;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.fab .wa{background:#25d366;color:#0b3d20}
+.fab .tr{background:var(--ink);color:#fff}
+.fab .admin-fab{background:#fff;color:var(--ink);border:1px solid var(--ink)}
+
+/* ---------- ADMIN: LOGIN MODAL ---------- */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.show{display:flex}
+.login-box{background:#fff;width:100%;max-width:360px;padding:34px 28px;position:relative}
+.login-box h3{font-family:var(--disp);text-transform:uppercase;letter-spacing:.1em;font-size:24px;margin-bottom:6px}
+.login-box p.sub{font-size:13px;color:var(--mute);margin-bottom:22px}
+.login-box input{width:100%;border:1px solid var(--line);padding:12px 14px;font-family:var(--body);font-size:15px;margin-bottom:12px}
+.login-box button.submit{width:100%;background:var(--ink);color:#fff;padding:13px;font-family:var(--disp);letter-spacing:.18em;text-transform:uppercase;font-size:14px}
+.login-box button.submit[disabled]{opacity:.5}
+.login-box .close-x{position:absolute;top:12px;right:14px;font-size:22px;line-height:1;color:var(--mute)}
+.login-err{color:#c0392b;font-size:13px;margin-bottom:10px;display:none}
+.login-hint{margin-top:16px;font-size:11px;color:var(--mute);line-height:1.6;border-top:1px solid var(--line);padding-top:12px}
+
+/* ---------- ADMIN PANEL ---------- */
+.admin-panel{position:fixed;inset:0;background:#fff;z-index:190;display:none;flex-direction:column}
+.admin-panel.show{display:flex}
+.admin-top{background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:16px 18px;flex:0 0 auto}
+.admin-top strong{font-family:var(--disp);letter-spacing:.14em;text-transform:uppercase;font-size:16px}
+.admin-top .acts{display:flex;gap:10px;align-items:center}
+.admin-top button{font-family:var(--disp);font-size:12px;letter-spacing:.12em;text-transform:uppercase;padding:8px 12px;border:1px solid #444}
+.admin-top button.primary{background:#fff;color:#000;border-color:#fff}
+.admin-tabs{display:flex;gap:4px;overflow-x:auto;background:#111;padding:0 14px;flex:0 0 auto;scrollbar-width:none}
+.admin-tabs::-webkit-scrollbar{display:none}
+.admin-tabs button{white-space:nowrap;color:#999;font-family:var(--disp);font-size:13px;letter-spacing:.1em;text-transform:uppercase;padding:12px 14px;border-bottom:3px solid transparent}
+.admin-tabs button.on{color:#fff;border-color:#fff}
+.admin-body{flex:1 1 auto;overflow-y:auto;padding:20px 16px 100px;background:#fafafa}
+.admin-section-title{font-family:var(--disp);text-transform:uppercase;letter-spacing:.1em;font-size:18px;margin-bottom:4px}
+.admin-section-sub{font-size:13px;color:var(--mute);margin-bottom:18px}
+.a-item{background:#fff;border:1px solid var(--line);padding:16px;margin-bottom:14px;position:relative}
+.a-item .a-row{display:grid;gap:10px;margin-bottom:10px}
+.a-item label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin-bottom:4px;font-family:var(--disp)}
+.a-item input[type=text],.a-item input[type=url],.a-item textarea,.a-item input[type=tel]{width:100%;border:1px solid var(--line);padding:10px 11px;font-family:var(--body);font-size:14px;background:#fff}
+.a-item textarea{resize:vertical;min-height:60px}
+.a-remove{position:absolute;top:12px;right:12px;font-size:12px;font-family:var(--disp);letter-spacing:.08em;text-transform:uppercase;color:#c0392b}
+.a-thumb-preview{width:100%;aspect-ratio:4/3;background:#eee;background-size:cover;background-position:center;margin-bottom:8px;display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-size:11px;color:#999;letter-spacing:.1em;text-transform:uppercase}
+.a-img-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.a-img-controls input[type=file]{font-size:12px;flex:1 1 160px}
+.a-upload-status{font-size:11px;color:var(--mute);margin-top:4px}
+.a-add{width:100%;border:1px dashed var(--ink);padding:14px;font-family:var(--disp);letter-spacing:.14em;text-transform:uppercase;font-size:13px;margin-top:4px;background:#fff}
+.a-add:hover{background:#f0f0f0}
+.a-savebar{position:fixed;left:0;right:0;bottom:0;background:var(--ink);padding:12px 16px;display:flex;gap:10px;align-items:center;justify-content:space-between;z-index:195}
+.a-savebar span{color:#9a9a9a;font-size:12px}
+.a-savebar button{background:#fff;color:#000;font-family:var(--disp);letter-spacing:.14em;text-transform:uppercase;font-size:14px;padding:12px 22px}
+.a-savebar button[disabled]{opacity:.5}
+.a-toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-140%);background:var(--ink);color:#fff;padding:12px 20px;font-family:var(--disp);letter-spacing:.1em;text-transform:uppercase;font-size:13px;z-index:210;transition:transform .3s;box-shadow:0 8px 20px rgba(0,0,0,.3);max-width:90vw;text-align:center}
+.a-toast.show{transform:translateX(-50%) translateY(0)}
+.a-two-col{display:grid;gap:10px}
+.a-danger{border:1px solid #c0392b;padding:16px;margin-top:20px}
+.a-danger h4{color:#c0392b;font-family:var(--disp);text-transform:uppercase;letter-spacing:.08em;font-size:14px;margin-bottom:6px}
+.a-danger button{margin-top:10px;background:#c0392b;color:#fff;padding:10px 16px;font-family:var(--disp);letter-spacing:.1em;text-transform:uppercase;font-size:12px}
+.a-config-warning{background:#fff3cd;border:1px solid #e0b93a;color:#6b5300;padding:14px 16px;font-size:13px;line-height:1.6;margin:0 0 16px}
+
+@media(min-width:760px){
+  .sec{padding:96px 40px}
+  .grid{grid-template-columns:repeat(3,1fr);gap:16px}
+  .tiles{grid-template-columns:repeat(4,1fr)}
+  .filters{justify-content:center}
+  .slide .cap{padding:0 56px 110px}
+  .hero-nav{left:56px;right:56px}
+  .header,.topbar{padding:0 40px}
+  .news-item{flex:0 0 300px}
+  .form .row{grid-template-columns:1fr 1fr}
+  .a-row{grid-template-columns:1fr 1fr}
+  .a-two-col{grid-template-columns:1fr 1fr}
+  .admin-body{padding:28px 40px 100px}
+  .a-savebar{padding:14px 40px}
+}
+@media(min-width:1080px){
+  .mainnav{display:flex}
+  .burger{display:none}
+  .grid{grid-template-columns:repeat(5,1fr)}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="#kontak">Contact Us</a>
+  <a href="#dealer">Dealer</a>
+  <a href="#" class="lang"><b>IND</b> / ENG</a>
+</div>
+
+<header class="header" id="header">
+  <a href="#" class="brand">Vespa</a>
+  <nav class="mainnav">
+    <a href="#model">Model</a>
+    <a href="#news">News &amp; Promo</a>
+    <a href="#testride">Test Ride</a>
+    <a href="#aftersales">Aftersales</a>
+    <a href="#accessories">Accessories</a>
+    <a href="#model">Configurator</a>
+    <a href="#heritage">Heritage</a>
+    <a href="#essentials">Vespa Essentials</a>
+  </nav>
+  <button class="burger" id="burger" aria-label="Buka menu"><span></span><span></span><span></span></button>
+</header>
+
+<nav class="drawer" id="drawer">
+  <a href="#model">Model</a>
+  <a href="#news">News &amp; Promo</a>
+  <a href="#testride">Test Ride</a>
+  <a href="#aftersales">Aftersales</a>
+  <a href="#accessories">Accessories</a>
+  <a href="#model">Configurator</a>
+  <a href="#heritage">Heritage</a>
+  <a href="#essentials">Vespa Essentials</a>
+  <div class="sub">
+    <a href="#kontak">Contact Us</a>
+    <a href="#dealer">Dealer</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-loading" id="heroLoading">Memuat...</div>
+  <div id="slides"></div>
+  <div class="hero-nav">
+    <div class="dots" id="dots"></div>
+    <div class="arrows">
+      <button id="prev" aria-label="Sebelumnya">&#10094;</button>
+      <button id="next" aria-label="Berikutnya">&#10095;</button>
+    </div>
+  </div>
+</section>
+
+<!-- RANGE -->
+<section class="sec" id="model">
+  <div class="sec-head">
+    <h3>Discover The Range</h3>
+    <span>Choose Your Model</span>
+  </div>
+  <div class="filters" id="filters"></div>
+  <div class="grid" id="grid"></div>
+</section>
+
+<!-- TILES -->
+<section class="tiles" id="essentials">
+  <a class="tile" href="#model"><div class="bg" data-ph></div><span>Primavera</span></a>
+  <a class="tile" href="#model"><div class="bg" data-ph></div><span>Configurator</span></a>
+  <a class="tile" href="#testride"><div class="bg" data-ph></div><span>Test Ride</span></a>
+  <a class="tile" href="#dealer"><div class="bg" data-ph></div><span>Find Us</span></a>
+</section>
+
+<!-- NEWS -->
+<section class="sec news" id="news">
+  <div class="sec-head"><h3>News</h3></div>
+  <div class="news-rail" id="newsRail"></div>
+  <a class="readall" href="#news">Read More</a>
+</section>
+
+<!-- LEAD FORM / TEST RIDE -->
+<section class="sec lead" id="testride">
+  <div class="sec-head">
+    <h3>Test Ride</h3>
+    <span>Jadwalkan sesi berkendara Anda</span>
+  </div>
+  <form class="form" id="leadForm">
+    <input name="nama" placeholder="Nama lengkap" required>
+    <div class="row">
+      <input name="hp" placeholder="Nomor WhatsApp" required inputmode="tel">
+      <input name="email" type="email" placeholder="E-mail">
+    </div>
+    <select name="model" id="leadModel"></select>
+    <select name="kota" id="leadKota"></select>
+    <textarea name="pesan" rows="3" placeholder="Catatan (opsional)"></textarea>
+    <button type="submit">Kirim Permintaan</button>
+    <p class="note">Dengan mengirim formulir ini Anda setuju dihubungi oleh tim dealer terkait penawaran dan jadwal test ride.</p>
+    <div class="ok" id="leadOk">Terima kasih. Permintaan Anda terkirim — tim kami akan menghubungi via WhatsApp.</div>
+  </form>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer" id="kontak">
+  <div class="nl">Newsletter: Keep Updated with Vespa</div>
+  <form class="nl-form" id="nlForm">
+    <input type="email" placeholder="Alamat e-mail" required>
+    <button type="submit">Submit</button>
+  </form>
+  <div class="social">
+    <a href="#" aria-label="Facebook">FB</a>
+    <a href="#" aria-label="X">X</a>
+    <a href="#" aria-label="YouTube">YT</a>
+    <a href="#" aria-label="Instagram">IG</a>
+  </div>
+  <div class="flinks" id="dealer">
+    <a href="#">Legal Note</a>
+    <a href="#aftersales">Aftersales</a>
+    <a href="#accessories">Accessories</a>
+    <a href="#heritage">Heritage</a>
+    <a href="#dealer">Dealer</a>
+    <a href="#" id="adminOpenLink" class="admin-link">Admin</a>
+  </div>
+  <p class="copy">
+    © SRISP 2026 — PT Auto Mitra Utama.<br>
+    DISCLAIMER: SEMUA FOTO PRODUK HANYA UNTUK ILUSTRASI. PRODUK YANG DITAMPILKAN DAPAT BERBEDA.
+  </p>
+</footer>
+
+<div class="fab">
+  <a class="wa" id="waBtn" href="#" target="_blank" rel="noopener">WhatsApp</a>
+  <a class="tr" href="#testride">Test Ride</a>
+  <button class="admin-fab" id="adminFab" style="display:none">Panel Admin</button>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="modal-overlay" id="loginOverlay">
+  <div class="login-box">
+    <span class="close-x" id="loginClose">&times;</span>
+    <h3>Login Admin</h3>
+    <p class="sub">Masuk pakai akun admin yang dibuat di Firebase Authentication.</p>
+    <div class="login-err" id="loginErr">Email atau password salah.</div>
+    <input type="email" id="loginEmail" placeholder="Email admin" autocomplete="username">
+    <input type="password" id="loginPass" placeholder="Password" autocomplete="current-password">
+    <button class="submit" id="loginSubmit">Masuk</button>
+    <div class="login-hint">Akun admin dibuat lewat Firebase Console → Authentication → Users, bukan lewat halaman ini. Lihat panduan setup yang saya berikan terpisah.</div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="admin-panel" id="adminPanel">
+  <div class="admin-top">
+    <strong>Panel Admin — Vespa</strong>
+    <div class="acts">
+      <button id="adminLogout">Keluar</button>
+      <button id="adminClose">Tutup ✕</button>
+    </div>
+  </div>
+  <div class="admin-tabs" id="adminTabs">
+    <button data-tab="hero" class="on">Hero Slide</button>
+    <button data-tab="models">Daftar Model</button>
+    <button data-tab="news">Berita</button>
+    <button data-tab="contact">Kontak &amp; Kota</button>
+  </div>
+  <div class="admin-body" id="adminBody"></div>
+  <div class="a-savebar">
+    <span id="saveHint">Perubahan belum tersimpan.</span>
+    <button id="saveAllBtn">Simpan Semua Perubahan</button>
+  </div>
+</div>
+<div class="a-toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   1) ISI KONFIGURASI FIREBASE ANDA DI SINI
+   Ambil dari: Firebase Console → Project Settings → General
+   → scroll ke "Your apps" → Web app → SDK setup and configuration
+   ========================================================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyAaHWHbSOyGC7bGoGdWW9YodGrcs0Tvpy8",
+  authDomain: "automitrautamaweb.firebaseapp.com",
+  projectId: "automitrautamaweb",
+  storageBucket: "automitrautamaweb.firebasestorage.app",
+  messagingSenderId: "619485947951",
+  appId: "1:619485947951:web:5dc58514ae5f45a5f7feda"
+};
+
+const CONFIG_IS_PLACEHOLDER = firebaseConfig.apiKey.indexOf("GANTI") === 0;
+
+let app, db, auth, storageRef;
+if(!CONFIG_IS_PLACEHOLDER){
+  app = firebase.initializeApp(firebaseConfig);
+  db = firebase.firestore();
+  auth = firebase.auth();
+  storageRef = firebase.storage();
+}
+
+/* Path dokumen Firestore tempat semua konten situs disimpan */
+const DOC_PATH = { collection: "vespa", doc: "siteData" };
+
+/* =========================================================
+   DATA DEFAULT — dipakai jika Firestore belum ada isinya
+   ========================================================= */
+const DEFAULT_DATA = {
+  wa: "6285260699191",
+  waText: "Halo Admin, saya ingin tanya unit Vespa",
+  slides: [
+    {eyebrow:"New", title:"GTS Super Tech 250", desc:"Mesin baru 250cc untuk petualangan urban.", cta:"Discover More", img:""},
+    {eyebrow:"Anniversary", title:"Vespa 80th Limited Edition", desc:"Delapan dekade ikon dua roda.", cta:"Discover More", img:""},
+    {eyebrow:"Icon", title:"Primavera", desc:"Fuel your passion, unlock new worlds.", cta:"Discover More", img:""},
+    {eyebrow:"Sport", title:"Sprint Tech", desc:"Karakter sporty dengan teknologi terkini.", cta:"Discover More", img:""},
+    {eyebrow:"Electric", title:"Vespa Elettrica", desc:"Berkendara tanpa emisi, tanpa suara.", cta:"Discover More", img:""}
+  ],
+  models: [
+    {name:"Vespa 80th Limited Edition", cat:"Special", price:"", tag:"Limited", img:""},
+    {name:"GTS Super Tech 250",         cat:"GTS",     price:"", tag:"New",     img:""},
+    {name:"Vespa 946 Horse",            cat:"Special", price:"", tag:"Limited", img:""},
+    {name:"Vespa GTV Officina 8",       cat:"GTV",     price:"", tag:"",        img:""},
+    {name:"Vespa Sprint Officina 8",    cat:"Sprint",  price:"", tag:"",        img:""},
+    {name:"Vespa Sprint Tech",          cat:"Sprint",  price:"", tag:"",        img:""},
+    {name:"Sprint S",                   cat:"Sprint",  price:"", tag:"",        img:""},
+    {name:"Sprint",                     cat:"Sprint",  price:"", tag:"",        img:""},
+    {name:"Primavera S",                cat:"Primavera",price:"",tag:"",        img:""},
+    {name:"Primavera",                  cat:"Primavera",price:"",tag:"",        img:""},
+    {name:"Vespa Elettrica",            cat:"Elettrica",price:"",tag:"",        img:""},
+    {name:"GTV",                        cat:"GTV",     price:"", tag:"",        img:""},
+    {name:"GTS Super Sport 150",        cat:"GTS",     price:"", tag:"",        img:""},
+    {name:"GTS Classic 150",            cat:"GTS",     price:"", tag:"",        img:""},
+    {name:"LX",                         cat:"LX",      price:"", tag:"",        img:""}
+  ],
+  news: [
+    {date:"29 Mei 2026", title:"Vespa GTS Super Tech terbaru hadir dengan mesin 250cc untuk petualangan urban", img:""},
+    {date:"26 Mei 2026", title:"Vespa 80th: perayaan delapan dekade sang ikon", img:""},
+    {date:"1 Apr 2026",  title:"Eksplorasi gaya baru bersama brand Piaggio Group setelah masa liburan", img:""},
+    {date:"30 Mar 2026", title:"Motoplex 4 Brand resmi dibuka di Makassar", img:""},
+    {date:"17 Mar 2026", title:"Primavera dan Sprint kini bermesin 180cc", img:""}
+  ],
+  kota: ["Jakarta","Bekasi","Bogor","Depok","Tangerang","Bandung","Cirebon","Semarang","Solo","Yogyakarta","Surabaya","Sidoarjo","Malang","Denpasar","Medan","Padang","Palembang","Pekanbaru","Lampung","Pontianak","Banjarmasin","Balikpapan","Samarinda","Makassar"]
+};
+
+let siteData = null;
+let isAdmin = false;
+let dataLoaded = false;
+let unsavedChanges = false;
+
+/* ================= FIRESTORE ================= */
+function docRef(){ return db.collection(DOC_PATH.collection).doc(DOC_PATH.doc); }
+
+async function loadData(){
+  if(CONFIG_IS_PLACEHOLDER){
+    siteData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+    dataLoaded = true;
+    renderPublicSite();
+    return;
+  }
+  try{
+    const snap = await docRef().get();
+    if(snap.exists){
+      siteData = Object.assign({}, DEFAULT_DATA, snap.data());
+    } else {
+      siteData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+      // Dokumen belum ada — akan dibuat otomatis saat admin pertama kali login & Simpan.
+    }
+  }catch(e){
+    console.warn("Gagal membaca data dari Firestore, memakai data bawaan sementara.", e);
+    siteData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+  }
+  dataLoaded = true;
+  renderPublicSite();
+}
+
+async function saveData(){
+  if(CONFIG_IS_PLACEHOLDER){
+    showToastMsg("Firebase belum dikonfigurasi — lihat komentar di bagian atas kode.");
+    return false;
+  }
+  if(!auth.currentUser){
+    showToastMsg("Sesi login berakhir, silakan masuk lagi.");
+    return false;
+  }
+  const btn = document.getElementById('saveAllBtn');
+  btn.disabled = true; btn.textContent = "Menyimpan...";
+  try{
+    await docRef().set(siteData, {merge:false});
+    unsavedChanges = false;
+    document.getElementById('saveHint').textContent = "Semua perubahan tersimpan.";
+    showToastMsg("Tersimpan ✓ Perubahan langsung tampil di situs.");
+    renderPublicSite();
+    return true;
+  }catch(e){
+    console.error(e);
+    showToastMsg("Gagal menyimpan: " + (e.message || "cek koneksi & aturan keamanan Firestore."));
+    return false;
+  }finally{
+    btn.disabled = false; btn.textContent = "Simpan Semua Perubahan";
+  }
+}
+
+function markUnsaved(){
+  unsavedChanges = true;
+  const hint = document.getElementById('saveHint');
+  if(hint) hint.textContent = "Ada perubahan yang belum disimpan.";
+}
+
+function showToastMsg(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(showToastMsg._t);
+  showToastMsg._t = setTimeout(()=>t.classList.remove('show'), 3200);
+}
+
+/* ================= RENDER PUBLIC SITE ================= */
+const ph = (label) => `<div class="ph">${escapeHtml(label)}</div>`;
+const bgStyle = (img) => img ? `background-image:url('${img}')` : 'background:#1c1c1c';
+function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+let cur = 0, timer;
+function renderPublicSite(){
+  document.getElementById('heroLoading').style.display = 'none';
+
+  const slidesEl = document.getElementById('slides');
+  const dotsEl = document.getElementById('dots');
+  slidesEl.innerHTML = siteData.slides.map((s,i)=>`
+    <div class="slide ${i===0?'on':''}">
+      <div class="bg" style="${bgStyle(s.img)}"></div>
+      <div class="cap">
+        <div class="eyebrow">${escapeHtml(s.eyebrow)}</div>
+        <h2>${escapeHtml(s.title)}</h2>
+        <p>${escapeHtml(s.desc)}</p>
+        <a class="btn-line" href="#model">${escapeHtml(s.cta)}</a>
+      </div>
+    </div>`).join('');
+  dotsEl.innerHTML = siteData.slides.map((_,i)=>`<i data-i="${i}" class="${i===0?'on':''}"></i>`).join('');
+  cur = 0;
+  auto();
+
+  const cats = ['Semua', ...new Set(siteData.models.map(m=>m.cat))];
+  const filtersEl = document.getElementById('filters');
+  filtersEl.innerHTML = cats.map((c,i)=>`<button data-c="${escapeHtml(c)}" class="${i===0?'on':''}">${escapeHtml(c)}</button>`).join('');
+  drawGrid('Semua');
+  filtersEl.onclick = e => {
+    const b = e.target.closest('button'); if(!b) return;
+    filtersEl.querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    drawGrid(b.dataset.c);
+  };
+
+  document.querySelectorAll('[data-ph]').forEach(el=>{
+    el.style.background = 'repeating-linear-gradient(135deg,#232323 0 14px,#1b1b1b 14px 28px)';
+  });
+
+  document.getElementById('newsRail').innerHTML = siteData.news.map(n=>`
+    <a class="news-item" href="#news">
+      <div class="thumb" style="${n.img?`background-image:url('${n.img}')`:''}">${n.img?'':ph('Berita')}</div>
+      <div class="body">
+        <div class="date">${escapeHtml(n.date)}</div>
+        <h5>${escapeHtml(n.title)}</h5>
+      </div>
+    </a>`).join('');
+
+  document.getElementById('leadModel').innerHTML =
+    '<option value="">Pilih model</option>' + siteData.models.map(m=>`<option>${escapeHtml(m.name)}</option>`).join('');
+  document.getElementById('leadKota').innerHTML =
+    '<option value="">Pilih kota</option>' + siteData.kota.map(k=>`<option>${escapeHtml(k)}</option>`).join('');
+
+  document.getElementById('waBtn').href =
+    `https://wa.me/${siteData.wa}?text=${encodeURIComponent(siteData.waText)}`;
+}
+
+function drawGrid(cat){
+  const gridEl = document.getElementById('grid');
+  const list = cat==='Semua' ? siteData.models : siteData.models.filter(m=>m.cat===cat);
+  gridEl.innerHTML = list.map(m=>`
+    <a class="card" href="#testride">
+      ${m.tag?`<span class="tagline">${escapeHtml(m.tag)}</span>`:''}
+      <div class="thumb" style="${m.img?`background-image:url('${m.img}')`:''}">${m.img?'':ph(m.cat)}</div>
+      <h4>${escapeHtml(m.name)}</h4>
+      ${m.price?`<div class="price">${escapeHtml(m.price)}</div>`:`<div class="price">Harga on request</div>`}
+      <span class="more">Lihat</span>
+    </a>`).join('');
+}
+
+const slideEls = () => document.querySelectorAll('.slide');
+function go(n){
+  const els = slideEls(); if(!els.length) return;
+  const ds = document.getElementById('dots').querySelectorAll('i');
+  cur = (n + els.length) % els.length;
+  els.forEach((e,i)=>e.classList.toggle('on', i===cur));
+  ds.forEach((d,i)=>d.classList.toggle('on', i===cur));
+}
+function auto(){ clearInterval(timer); timer = setInterval(()=>go(cur+1), 6000); }
+document.getElementById('next').onclick = ()=>{go(cur+1);auto()};
+document.getElementById('prev').onclick = ()=>{go(cur-1);auto()};
+document.getElementById('dots').onclick = e => { if(e.target.dataset.i!==undefined){ go(+e.target.dataset.i); auto(); } };
+
+let sx=null;
+document.getElementById('hero').addEventListener('touchstart',e=>sx=e.touches[0].clientX,{passive:true});
+document.getElementById('hero').addEventListener('touchend',e=>{
+  if(sx===null)return;
+  const dx = e.changedTouches[0].clientX - sx;
+  if(Math.abs(dx)>50){ go(dx<0?cur+1:cur-1); auto(); }
+  sx=null;
+},{passive:true});
+
+document.getElementById('leadForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const f = e.target;
+  const txt = `Halo, saya ingin test ride Vespa.
+Nama: ${f.nama.value}
+WhatsApp: ${f.hp.value}
+Email: ${f.email.value || '-'}
+Model: ${f.model.value || '-'}
+Kota: ${f.kota.value || '-'}
+Catatan: ${f.pesan.value || '-'}`;
+  window.open(`https://wa.me/${siteData.wa}?text=${encodeURIComponent(txt)}`,'_blank');
+  document.getElementById('leadOk').style.display='block';
+  f.reset();
+});
+document.getElementById('nlForm').addEventListener('submit', e=>{
+  e.preventDefault(); e.target.querySelector('input').value='';
+  alert('Terima kasih, e-mail Anda sudah terdaftar.');
+});
+
+const header = document.getElementById('header');
+const onScroll = () => header.classList.toggle('solid', window.scrollY > window.innerHeight - 120);
+window.addEventListener('scroll', onScroll, {passive:true}); onScroll();
+document.getElementById('burger').onclick = () => document.body.classList.toggle('menu-open');
+document.getElementById('drawer').onclick = e => { if(e.target.tagName==='A') document.body.classList.remove('menu-open'); };
+
+/* =========================================================
+   ADMIN: LOGIN (Firebase Authentication)
+   ========================================================= */
+const loginOverlay = document.getElementById('loginOverlay');
+function openLogin(){
+  if(!dataLoaded){ showToastMsg("Data masih dimuat, coba sesaat lagi."); return; }
+  if(CONFIG_IS_PLACEHOLDER){
+    showToastMsg("Isi dulu firebaseConfig di kode sebelum bisa login.");
+    return;
+  }
+  document.getElementById('loginErr').style.display='none';
+  document.getElementById('loginEmail').value='';
+  document.getElementById('loginPass').value='';
+  loginOverlay.classList.add('show');
+  document.getElementById('loginEmail').focus();
+}
+function closeLogin(){ loginOverlay.classList.remove('show'); }
+document.getElementById('adminOpenLink').addEventListener('click', e=>{ e.preventDefault(); openLogin(); });
+document.getElementById('loginClose').addEventListener('click', closeLogin);
+loginOverlay.addEventListener('click', e=>{ if(e.target===loginOverlay) closeLogin(); });
+document.getElementById('loginSubmit').addEventListener('click', doLogin);
+document.getElementById('loginPass').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+
+async function doLogin(){
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const btn = document.getElementById('loginSubmit');
+  const errBox = document.getElementById('loginErr');
+  errBox.style.display = 'none';
+  if(!email || !pass){ errBox.textContent = "Isi email dan password."; errBox.style.display='block'; return; }
+  btn.disabled = true; btn.textContent = "Memproses...";
+  try{
+    await auth.signInWithEmailAndPassword(email, pass);
+    isAdmin = true;
+    closeLogin();
+    document.getElementById('adminFab').style.display = 'flex';
+    openAdminPanel();
+  }catch(e){
+    errBox.textContent = "Login gagal: " + (e.message || "email/password salah.");
+    errBox.style.display = 'block';
+  }finally{
+    btn.disabled = false; btn.textContent = "Masuk";
+  }
+}
+document.getElementById('adminFab').addEventListener('click', openAdminPanel);
+document.getElementById('adminClose').addEventListener('click', ()=>document.getElementById('adminPanel').classList.remove('show'));
+document.getElementById('adminLogout').addEventListener('click', async ()=>{
+  if(unsavedChanges && !confirm('Ada perubahan yang belum disimpan. Yakin keluar?')) return;
+  isAdmin = false;
+  if(auth) await auth.signOut().catch(()=>{});
+  document.getElementById('adminPanel').classList.remove('show');
+  document.getElementById('adminFab').style.display = 'none';
+});
+document.getElementById('saveAllBtn').addEventListener('click', ()=>saveData());
+
+/* =========================================================
+   ADMIN: PANEL
+   ========================================================= */
+let currentTab = 'hero';
+function openAdminPanel(){
+  document.getElementById('adminPanel').classList.add('show');
+  renderAdminTab(currentTab);
+}
+document.getElementById('adminTabs').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  document.querySelectorAll('#adminTabs button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  currentTab = b.dataset.tab;
+  renderAdminTab(currentTab);
+});
+
+function renderAdminTab(tab){
+  const body = document.getElementById('adminBody');
+  let html = '';
+
+  if(tab==='hero') html = adminListEditor('slides', 'Hero Slide', 'Gambar besar di paling atas halaman (carousel).', [
+    {key:'eyebrow', label:'Label kecil (eyebrow)', type:'text', ph:'cth: New'},
+    {key:'title', label:'Judul', type:'text', ph:'cth: GTS Super Tech 250'},
+    {key:'desc', label:'Deskripsi', type:'textarea', ph:'Kalimat singkat pendukung'},
+    {key:'cta', label:'Teks tombol', type:'text', ph:'cth: Discover More'},
+    {key:'img', label:'Foto', type:'image'}
+  ], {eyebrow:'', title:'Judul Baru', desc:'', cta:'Discover More', img:''});
+
+  else if(tab==='models') html = adminListEditor('models', 'Daftar Model', 'Kartu model yang tampil di bagian "Discover The Range".', [
+    {key:'name', label:'Nama model', type:'text', ph:'cth: Primavera'},
+    {key:'cat', label:'Kategori', type:'text', ph:'cth: Primavera, GTS, Sprint...'},
+    {key:'price', label:'Harga (kosongkan utk "on request")', type:'text', ph:'cth: Rp 65.000.000'},
+    {key:'tag', label:'Label (opsional)', type:'text', ph:'cth: New / Limited'},
+    {key:'img', label:'Foto', type:'image'}
+  ], {name:'Model Baru', cat:'Sprint', price:'', tag:'', img:''});
+
+  else if(tab==='news') html = adminListEditor('news', 'Berita & Promo', 'Artikel yang tampil di bagian News.', [
+    {key:'date', label:'Tanggal', type:'text', ph:'cth: 29 Mei 2026'},
+    {key:'title', label:'Judul berita', type:'textarea', ph:'Judul berita'},
+    {key:'img', label:'Foto', type:'image'}
+  ], {date:'', title:'Judul berita baru', img:''});
+
+  else if(tab==='contact') html = adminContactEditor();
+
+  if(CONFIG_IS_PLACEHOLDER){
+    html = `<div class="a-config-warning">Firebase belum dikonfigurasi. Isi <code>firebaseConfig</code> di bagian atas file HTML ini dengan data dari project Firebase Anda, lalu deploy ulang. Sampai saat itu, panel ini hanya untuk pratinjau dan tidak bisa menyimpan.</div>` + html;
+  }
+
+  body.innerHTML = html;
+  bindAdminInputs(tab);
+}
+
+function adminListEditor(arrKey, title, sub, fields, blank){
+  const items = siteData[arrKey];
+  const itemsHtml = items.map((item,idx)=>`
+    <div class="a-item" data-arr="${arrKey}" data-idx="${idx}">
+      <button class="a-remove" data-action="remove">Hapus ✕</button>
+      <div class="a-row">
+        ${fields.map(f=>{
+          if(f.type==='image'){
+            return `<div style="grid-column:1/-1">
+              <label>${f.label}</label>
+              <div class="a-thumb-preview" data-preview style="${item[f.key]?`background-image:url('${item[f.key]}')`:''}">${item[f.key]?'':'Belum ada foto'}</div>
+              <div class="a-img-controls">
+                <input type="file" accept="image/*" data-field="${f.key}" data-action="upload">
+                <input type="url" data-field="${f.key}" data-action="url" placeholder="atau tempel URL gambar" value="${item[f.key] && item[f.key].startsWith('http') && item[f.key].indexOf('firebasestorage')===-1 ? escapeAttr(item[f.key]) : ''}">
+              </div>
+              <div class="a-upload-status" data-status></div>
+            </div>`;
+          }
+          if(f.type==='textarea'){
+            return `<div style="grid-column:1/-1"><label>${f.label}</label><textarea data-field="${f.key}" placeholder="${f.ph||''}">${escapeHtml(item[f.key])}</textarea></div>`;
+          }
+          return `<div><label>${f.label}</label><input type="text" data-field="${f.key}" placeholder="${f.ph||''}" value="${escapeAttr(item[f.key])}"></div>`;
+        }).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  return `
+    <div class="admin-section-title">${title}</div>
+    <div class="admin-section-sub">${sub}</div>
+    ${itemsHtml || '<p style="color:var(--mute);font-size:14px;margin-bottom:14px">Belum ada item.</p>'}
+    <button class="a-add" data-action="add-item" data-arr="${arrKey}" data-blank='${JSON.stringify(blank)}'>+ Tambah ${title}</button>
+  `;
+}
+
+function escapeAttr(s){ return escapeHtml(s).replace(/\n/g,'&#10;'); }
+
+function adminContactEditor(){
+  const d = siteData;
+  return `
+    <div class="admin-section-title">Kontak &amp; Kota</div>
+    <div class="admin-section-sub">Nomor WhatsApp, pesan default, dan daftar kota pada formulir Test Ride.</div>
+    <div class="a-item">
+      <div class="a-row">
+        <div><label>Nomor WhatsApp (format 62xxxxxxxxxx)</label><input type="tel" id="f-wa" value="${escapeAttr(d.wa)}"></div>
+        <div><label>Pesan pembuka WhatsApp</label><input type="text" id="f-waText" value="${escapeAttr(d.waText)}"></div>
+      </div>
+    </div>
+    <div class="a-item">
+      <label>Daftar kota (pisahkan dengan koma)</label>
+      <textarea id="f-kota" rows="5">${escapeHtml(d.kota.join(', '))}</textarea>
+    </div>
+  `;
+}
+
+function bindAdminInputs(tab){
+  const body = document.getElementById('adminBody');
+
+  if(tab==='hero' || tab==='models' || tab==='news'){
+    body.querySelectorAll('.a-item').forEach(itemEl=>{
+      const arr = itemEl.dataset.arr;
+      const idx = +itemEl.dataset.idx;
+
+      itemEl.querySelectorAll('input[type=text],textarea').forEach(inp=>{
+        if(inp.dataset.action==='url') return;
+        inp.addEventListener('input', ()=>{
+          siteData[arr][idx][inp.dataset.field] = inp.value;
+          markUnsaved();
+        });
+      });
+
+      const urlInput = itemEl.querySelector('input[data-action="url"]');
+      if(urlInput){
+        urlInput.addEventListener('input', ()=>{
+          siteData[arr][idx][urlInput.dataset.field] = urlInput.value;
+          markUnsaved();
+          const preview = itemEl.querySelector('[data-preview]');
+          preview.style.backgroundImage = urlInput.value ? `url('${urlInput.value}')` : '';
+          preview.textContent = urlInput.value ? '' : 'Belum ada foto';
+        });
+      }
+
+      const fileInput = itemEl.querySelector('input[type=file]');
+      if(fileInput){
+        fileInput.addEventListener('change', async ()=>{
+          const file = fileInput.files[0];
+          if(!file) return;
+          const statusEl = itemEl.querySelector('[data-status]');
+          const preview = itemEl.querySelector('[data-preview]');
+          if(CONFIG_IS_PLACEHOLDER){
+            showToastMsg("Isi firebaseConfig dulu sebelum upload foto.");
+            return;
+          }
+          if(!auth.currentUser){
+            showToastMsg("Sesi login berakhir, silakan masuk lagi.");
+            return;
+          }
+          try{
+            statusEl.textContent = "Mengompres & mengupload...";
+            const blob = await fileToCompressedBlob(file);
+            const path = `images/${Date.now()}-${Math.random().toString(36).slice(2,8)}.jpg`;
+            const ref = storageRef.ref().child(path);
+            await ref.put(blob, {contentType:'image/jpeg'});
+            const url = await ref.getDownloadURL();
+            siteData[arr][idx][fileInput.dataset.field] = url;
+            markUnsaved();
+            preview.style.backgroundImage = `url('${url}')`;
+            preview.textContent = '';
+            if(urlInput) urlInput.value = '';
+            statusEl.textContent = "Foto terupload. Klik \"Simpan Semua Perubahan\" untuk menerapkan.";
+          }catch(err){
+            console.error(err);
+            statusEl.textContent = "Gagal upload: " + (err.message || "cek aturan keamanan Firebase Storage.");
+          }
+        });
+      }
+
+      const removeBtn = itemEl.querySelector('[data-action="remove"]');
+      removeBtn.addEventListener('click', ()=>{
+        siteData[arr].splice(idx,1);
+        markUnsaved();
+        renderAdminTab(tab);
+      });
+    });
+
+    const addBtn = body.querySelector('[data-action="add-item"]');
+    if(addBtn){
+      addBtn.addEventListener('click', ()=>{
+        const blank = JSON.parse(addBtn.dataset.blank);
+        siteData[addBtn.dataset.arr].push(Object.assign({}, blank));
+        markUnsaved();
+        renderAdminTab(tab);
+      });
+    }
+  }
+
+  if(tab==='contact'){
+    document.getElementById('f-wa').addEventListener('input', e=>{ siteData.wa = e.target.value.trim(); markUnsaved(); });
+    document.getElementById('f-waText').addEventListener('input', e=>{ siteData.waText = e.target.value; markUnsaved(); });
+    document.getElementById('f-kota').addEventListener('input', e=>{
+      siteData.kota = e.target.value.split(',').map(s=>s.trim()).filter(Boolean);
+      markUnsaved();
+    });
+  }
+}
+
+/* Kompres gambar sebelum diupload ke Firebase Storage */
+function fileToCompressedBlob(file, maxW=1200, quality=0.78){
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, maxW/img.width);
+        const w = Math.max(1, Math.round(img.width*scale));
+        const h = Math.max(1, Math.round(img.height*scale));
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        canvas.toBlob(blob=>{
+          if(blob) resolve(blob); else reject(new Error("Gagal mengompres gambar"));
+        }, 'image/jpeg', quality);
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ================= INIT ================= */
+loadData();
+</script>
+</body>
+</html>
