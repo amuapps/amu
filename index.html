@@ -459,6 +459,21 @@ const firebaseConfig = {
 
 const CONFIG_IS_PLACEHOLDER = firebaseConfig.apiKey.indexOf("GANTI") === 0;
 
+/* API key ImgBB — dipakai untuk upload foto langsung dari panel admin */
+const IMGBB_API_KEY = "a6c521b32a0e7a024e7c8d651e0b7072";
+
+async function uploadToImgBB(file){
+  const formData = new FormData();
+  formData.append('image', file);
+  const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+    method: 'POST',
+    body: formData
+  });
+  const data = await res.json();
+  if(!data.success) throw new Error(data.error && data.error.message ? data.error.message : 'Upload gagal');
+  return data.data.url;
+}
+
 let app, db, auth;
 if(!CONFIG_IS_PLACEHOLDER){
   try{
@@ -822,9 +837,10 @@ function adminListEditor(arrKey, title, sub, fields, blank){
               <label>${f.label}</label>
               <div class="a-thumb-preview" data-preview style="${item[f.key]?`background-image:url('${item[f.key]}')`:''}">${item[f.key]?'':'Belum ada foto'}</div>
               <div class="a-img-controls">
-                <input type="url" data-field="${f.key}" data-action="url" placeholder="Tempel URL gambar (https://...)" value="${escapeAttr(item[f.key])}" style="flex:1 1 100%">
+                <input type="file" accept="image/*" data-field="${f.key}" data-action="filepick">
               </div>
-              <div class="a-upload-status" style="font-size:11px;color:var(--mute);margin-top:4px">Tips: upload foto ke Google Drive/Imgur/hosting gambar, lalu tempel link-nya di sini.</div>
+              <div class="a-upload-status" data-status style="font-size:11px;color:var(--mute);margin-top:4px">Pilih foto dari galeri HP — otomatis ter-upload.</div>
+              <input type="url" data-field="${f.key}" data-action="url" value="${escapeAttr(item[f.key])}" style="display:none">
             </div>`;
           }
           if(f.type==='textarea'){
@@ -881,6 +897,30 @@ function bindAdminInputs(tab){
       });
 
       const urlInput = itemEl.querySelector('input[data-action="url"]');
+      const filePick = itemEl.querySelector('input[data-action="filepick"]');
+      const statusEl = itemEl.querySelector('[data-status]');
+      if(filePick){
+        filePick.addEventListener('change', async ()=>{
+          const file = filePick.files[0];
+          if(!file) return;
+          statusEl.textContent = 'Mengunggah...';
+          statusEl.style.color = '#8a8a8a';
+          try{
+            const url = await uploadToImgBB(file);
+            siteData[arr][idx][filePick.dataset.field] = url;
+            if(urlInput) urlInput.value = url;
+            markUnsaved();
+            const preview = itemEl.querySelector('[data-preview]');
+            preview.style.backgroundImage = `url('${url}')`;
+            preview.textContent = '';
+            statusEl.textContent = 'Foto berhasil diunggah ✓';
+            statusEl.style.color = '#25d366';
+          }catch(e){
+            statusEl.textContent = 'Gagal unggah: ' + e.message;
+            statusEl.style.color = '#c0392b';
+          }
+        });
+      }
       if(urlInput){
         urlInput.addEventListener('input', ()=>{
           siteData[arr][idx][urlInput.dataset.field] = urlInput.value;
