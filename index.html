@@ -459,20 +459,84 @@ const firebaseConfig = {
 
 const CONFIG_IS_PLACEHOLDER = firebaseConfig.apiKey.indexOf("GANTI") === 0;
 
-/* API key ImgBB — dipakai untuk upload foto langsung dari panel admin */
-const IMGBB_API_KEY = "a6c521b32a0e7a024e7c8d651e0b7072";
+/* =========================================================
+   PENYIMPANAN FOTO — di Firestore sendiri (koleksi "vespaImages")
+   ImgBB tidak dipakai lagi karena i.ibb.co diblokir sebagian ISP Indonesia.
+   Foto dikecilkan otomatis di browser lalu disimpan sebagai 1 dokumen per foto.
+   Di data situs, kolom img berisi "fsimg:<idDokumen>".
+   URL lama (https://...) tetap didukung.
+   ========================================================= */
+const IMG_COLLECTION = "vespaImages";
+const IMG_PREFIX = "fsimg:";
+const imgCache = {};          // id -> dataURL
 
-async function uploadToImgBB(file){
-  const formData = new FormData();
-  formData.append('image', file);
-  const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-    method: 'POST',
-    body: formData
+function loadImageFile(file){
+  return new Promise((resolve, reject)=>{
+    const url = URL.createObjectURL(file);
+    const im = new Image();
+    im.onload = ()=>{ URL.revokeObjectURL(url); resolve(im); };
+    im.onerror = ()=>{ URL.revokeObjectURL(url); reject(new Error('File bukan gambar yang valid')); };
+    im.src = url;
   });
-  const data = await res.json();
-  if(!data.success) throw new Error(data.error && data.error.message ? data.error.message : 'Upload gagal');
-  return data.data.url;
 }
+
+/* Kecilkan foto sampai < ~700 KB (batas dokumen Firestore 1 MB) */
+async function compressImage(file){
+  const im = await loadImageFile(file);
+  let maxSide = 1600, quality = 0.8, dataUrl = '';
+  for(let i=0;i<8;i++){
+    const scale = Math.min(1, maxSide / Math.max(im.naturalWidth, im.naturalHeight));
+    const w = Math.round(im.naturalWidth * scale), h = Math.round(im.naturalHeight * scale);
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0,0,w,h);   // PNG transparan -> latar putih
+    ctx.drawImage(im, 0, 0, w, h);
+    dataUrl = c.toDataURL('image/jpeg', quality);
+    if(dataUrl.length < 700000) return dataUrl;
+    if(quality > 0.55) quality -= 0.1; else maxSide = Math.round(maxSide * 0.8);
+  }
+  throw new Error('Foto terlalu besar, coba foto lain');
+}
+
+async function uploadImage(file){
+  const dataUrl = await compressImage(file);
+  const ref = await db.collection(IMG_COLLECTION).add({
+    data: dataUrl,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  imgCache[ref.id] = dataUrl;
+  return IMG_PREFIX + ref.id;
+}
+
+/* Ubah nilai kolom img menjadi URL yang bisa dipakai di CSS */
+function resolveImg(v){
+  if(!v) return '';
+  if(String(v).indexOf(IMG_PREFIX) === 0) return imgCache[v.slice(IMG_PREFIX.length)] || '';
+  return v;
+}
+
+/* Ambil semua foto Firestore yang dipakai di data situs */
+async function preloadImages(){
+  const ids = new Set();
+  ['slides','models','news'].forEach(k=>(siteData[k]||[]).forEach(it=>{
+    if(it.img && String(it.img).indexOf(IMG_PREFIX)===0) ids.add(it.img.slice(IMG_PREFIX.length));
+  }));
+  await Promise.all([...ids].filter(id=>!imgCache[id]).map(async id=>{
+    try{
+      const s = await db.collection(IMG_COLLECTION).doc(id).get();
+      if(s.exists) imgCache[id] = s.data().data;
+    }catch(e){ console.warn('Gagal memuat foto', id, e); }
+  }));
+}
+
+/* Hapus dokumen foto lama yang sudah diganti (tidak wajib berhasil) */
+function deleteOldImage(v){
+  if(v && String(v).indexOf(IMG_PREFIX)===0){
+    db.collection(IMG_COLLECTION).doc(v.slice(IMG_PREFIX.length)).delete().catch(()=>{});
+  }
+}
+const cssUrl = (v) => { const u = resolveImg(v); return u ? `background-image:url('${u}')` : ''; };
 
 let app, db, auth;
 if(!CONFIG_IS_PLACEHOLDER){
@@ -556,6 +620,8 @@ async function loadData(){
     siteData = JSON.parse(JSON.stringify(DEFAULT_DATA));
   }
   dataLoaded = true;
+  renderPublicSite();          // tampilkan teks dulu
+  await preloadImages();       // lalu foto dari Firestore
   renderPublicSite();
 }
 
@@ -602,7 +668,7 @@ function showToastMsg(msg){
 
 /* ================= RENDER PUBLIC SITE ================= */
 const ph = (label) => `<div class="ph">${escapeHtml(label)}</div>`;
-const bgStyle = (img) => img ? `background-image:url('${img}')` : 'background:#1c1c1c';
+const bgStyle = (img) => resolveImg(img) ? cssUrl(img) : 'background:#1c1c1c';
 function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 let cur = 0, timer;
@@ -642,7 +708,7 @@ function renderPublicSite(){
 
   document.getElementById('newsRail').innerHTML = siteData.news.map(n=>`
     <a class="news-item" href="#news">
-      <div class="thumb" style="${n.img?`background-image:url('${n.img}')`:''}">${n.img?'':ph('Berita')}</div>
+      <div class="thumb" style="${cssUrl(n.img)}">${resolveImg(n.img)?'':ph('Berita')}</div>
       <div class="body">
         <div class="date">${escapeHtml(n.date)}</div>
         <h5>${escapeHtml(n.title)}</h5>
@@ -664,7 +730,7 @@ function drawGrid(cat){
   gridEl.innerHTML = list.map(m=>`
     <a class="card" href="#testride">
       ${m.tag?`<span class="tagline">${escapeHtml(m.tag)}</span>`:''}
-      <div class="thumb" style="${m.img?`background-image:url('${m.img}')`:''}">${m.img?'':ph(m.cat)}</div>
+      <div class="thumb" style="${cssUrl(m.img)}">${resolveImg(m.img)?'':ph(m.cat)}</div>
       <h4>${escapeHtml(m.name)}</h4>
       ${m.price?`<div class="price">${escapeHtml(m.price)}</div>`:`<div class="price">Harga on request</div>`}
       <span class="more">Lihat</span>
@@ -763,7 +829,18 @@ async function doLogin(){
   }
 }
 document.getElementById('adminFab').addEventListener('click', openAdminPanel);
-document.getElementById('adminClose').addEventListener('click', ()=>document.getElementById('adminPanel').classList.remove('show'));
+document.getElementById('adminClose').addEventListener('click', async ()=>{
+  if(unsavedChanges){
+    if(confirm('Ada perubahan yang belum disimpan. Simpan sekarang?')){
+      const ok = await saveData();
+      if(!ok) return; // biarkan panel tetap terbuka kalau gagal
+    }
+  }
+  document.getElementById('adminPanel').classList.remove('show');
+});
+window.addEventListener('beforeunload', e=>{
+  if(unsavedChanges){ e.preventDefault(); e.returnValue = ''; }
+});
 document.getElementById('adminLogout').addEventListener('click', async ()=>{
   if(unsavedChanges && !confirm('Ada perubahan yang belum disimpan. Yakin keluar?')) return;
   isAdmin = false;
@@ -835,11 +912,11 @@ function adminListEditor(arrKey, title, sub, fields, blank){
           if(f.type==='image'){
             return `<div style="grid-column:1/-1">
               <label>${f.label}</label>
-              <div class="a-thumb-preview" data-preview style="${item[f.key]?`background-image:url('${item[f.key]}')`:''}">${item[f.key]?'':'Belum ada foto'}</div>
+              <div class="a-thumb-preview" data-preview style="${cssUrl(item[f.key])}">${resolveImg(item[f.key])?'':'Belum ada foto'}</div>
               <div class="a-img-controls">
                 <input type="file" accept="image/*" data-field="${f.key}" data-action="filepick">
               </div>
-              <div class="a-upload-status" data-status style="font-size:11px;color:var(--mute);margin-top:4px">Pilih foto dari galeri HP — otomatis ter-upload.</div>
+              <div class="a-upload-status" data-status style="font-size:11px;color:var(--mute);margin-top:4px">Pilih foto dari galeri HP — otomatis ter-upload &amp; tersimpan.</div>
               <input type="url" data-field="${f.key}" data-action="url" value="${escapeAttr(item[f.key])}" style="display:none">
             </div>`;
           }
@@ -906,15 +983,27 @@ function bindAdminInputs(tab){
           statusEl.textContent = 'Mengunggah...';
           statusEl.style.color = '#8a8a8a';
           try{
-            const url = await uploadToImgBB(file);
-            siteData[arr][idx][filePick.dataset.field] = url;
-            if(urlInput) urlInput.value = url;
+            statusEl.textContent = 'Mengecilkan & mengunggah foto...';
+            const oldVal = siteData[arr][idx][filePick.dataset.field];
+            const ref = await uploadImage(file);
+            siteData[arr][idx][filePick.dataset.field] = ref;
+            if(urlInput) urlInput.value = ref;
             markUnsaved();
             const preview = itemEl.querySelector('[data-preview]');
-            preview.style.backgroundImage = `url('${url}')`;
+            preview.style.backgroundImage = `url('${resolveImg(ref)}')`;
             preview.textContent = '';
-            statusEl.textContent = 'Foto berhasil diunggah ✓';
-            statusEl.style.color = '#25d366';
+            /* Langsung simpan ke Firestore supaya foto tidak hilang
+               kalau panel ditutup / halaman di-refresh sebelum klik Simpan. */
+            statusEl.textContent = 'Foto terunggah, menyimpan ke situs...';
+            const ok = await saveData();
+            if(ok){
+              if(oldVal && oldVal !== ref) deleteOldImage(oldVal);
+              statusEl.textContent = 'Foto tersimpan & tampil di situs ✓';
+              statusEl.style.color = '#25d366';
+            } else {
+              statusEl.textContent = 'Foto terunggah tapi GAGAL disimpan ke situs. Klik "Simpan Semua Perubahan" lagi.';
+              statusEl.style.color = '#c0392b';
+            }
           }catch(e){
             statusEl.textContent = 'Gagal unggah: ' + e.message;
             statusEl.style.color = '#c0392b';
